@@ -39,6 +39,9 @@ Item {
     Connections {
         target: QuayModel
         function onEntriesChanged() {
+            // A window closing is exactly the kind of entries change that
+            // would otherwise leave the preview showing a dead thumbnail.
+            root.hidePreview();
             if (root.dragIndex === -1) return;
             root.dragIndex = -1;
             root.dropIndex = -1;
@@ -52,7 +55,20 @@ Item {
     }
 
     function openFolder(id) {
+        root.hidePreview();
         folderLoader.folderId = folderLoader.folderId === id ? "" : id;
+    }
+
+    // Routed through root functions rather than referencing previewLoader's id
+    // directly: a Bound delegate (GridView.delegate below) cannot reliably
+    // resolve a sibling id declared elsewhere in this file from inside an
+    // imperative signal handler, only from a declarative property binding.
+    function showPreview(id) {
+        previewLoader.activeId = id;
+    }
+
+    function hidePreview() {
+        previewLoader.activeId = "";
     }
 
     function scrollBy(rows) {
@@ -108,9 +124,11 @@ Item {
             onDragStarted: index => {
                 root.dragIndex = index;
                 root.closeFolder();
+                root.hidePreview();
             }
             onDragMoved: (index, scenePoint) => root.updateDrop(index, scenePoint)
             onDragFinished: index => root.commitDrop(index)
+            onPreviewRequested: id => root.showPreview(id)
         }
     }
 
@@ -196,6 +214,24 @@ Item {
             onLaunched: id => {
                 QuayModel.activate(id);
                 root.closeFolder();
+            }
+        }
+    }
+
+    Loader {
+        id: previewLoader
+        property string activeId: ""
+
+        active: previewLoader.activeId !== ""
+        anchors.fill: parent
+        asynchronous: true
+
+        sourceComponent: QuayWindowPreview {
+            entryId: previewLoader.activeId
+            onDismissed: previewLoader.activeId = ""
+            onSelected: toplevel => {
+                toplevel.activate();
+                previewLoader.activeId = "";
             }
         }
     }

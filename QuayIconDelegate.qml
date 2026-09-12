@@ -20,6 +20,7 @@ Item {
     signal dragStarted(int index)
     signal dragMoved(int index, point scenePoint)
     signal dragFinished(int index)
+    signal previewRequested(string id)
 
     width: root.cellSize
     height: root.cellSize
@@ -158,7 +159,23 @@ Item {
         }
     }
 
-    HoverHandler { id: hoverHandler }
+    // A short dwell before offering the preview keeps a plain pass-over from
+    // popping a thumbnail panel on every tile the cursor crosses.
+    HoverHandler {
+        id: hoverHandler
+        onHoveredChanged: {
+            if (hoverHandler.hovered && !root.isFolder && !root.dragging && root.entry.windowCount > 1)
+                previewTimer.restart();
+            else
+                previewTimer.stop();
+        }
+    }
+
+    Timer {
+        id: previewTimer
+        interval: 400
+        onTriggered: root.previewRequested(root.entry.id)
+    }
 
     DragHandler {
         id: dragHandler
