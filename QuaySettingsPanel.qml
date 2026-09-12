@@ -212,7 +212,7 @@ PanelWindow {
                     spacing: 10
 
                     Repeater {
-                        model: QuayModel.entries.slice(0, 5)
+                        model: QuayModel.entries.filter(entry => entry.type === "app").slice(0, 5)
 
                         Rectangle {
                             id: previewTile
