@@ -1,0 +1,1249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quay for Quickshell</title>
+<meta name="description" content="A vertical, home-screen-style app launcher for Quickshell. Pinned apps, folders and running windows in one rail that moves one row per wheel notch.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Quay for Quickshell">
+<meta property="og:description" content="A vertical app launcher for Quickshell that moves one row per wheel notch.">
+<meta property="og:url" content="https://lunanoir21.github.io/quickshell-quay/">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<script>
+  try {
+    var savedTheme = localStorage.getItem("quay-theme");
+    if (savedTheme === "black" || savedTheme === "white") document.documentElement.dataset.theme = savedTheme;
+  } catch (e) {}
+</script>
+<style>
+@font-face {
+  font-family: "Quay Stencil";
+  src: url("fonts/big-shoulders-stencil-800.woff") format("woff");
+  font-weight: 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Quay Mono";
+  src: url("fonts/jetbrains-mono-400.woff") format("woff");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Quay Mono";
+  src: url("fonts/jetbrains-mono-700.woff") format("woff");
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  /* Both palettes are QuayTheme.qml's, value for value: the page wears the
+     widget's two themes and nothing else. Contrast carries state, not hue. */
+  --paper: #ffffff;
+  --kerb: #f2f2f2;
+  --slab: #e6e6e6;
+  --slab-2: #d4d4d4;
+  --tide: #8a8a8a;
+  --running: #7a7a7a;
+  --graphite: #4a4a4a;
+  --ink: #0a0a0a;
+
+  --stencil: "Quay Stencil", "Arial Narrow", "Nimbus Sans Narrow", sans-serif;
+  --mono: "Quay Mono", ui-monospace, "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+
+  --wall: 104px;
+  --rail-gap: 132px;
+  --gutter: clamp(20px, 4vw, 56px);
+  /* Easing.OutCubic — the curve Quay itself animates with. */
+  --ease-out: cubic-bezier(.215, .61, .355, 1);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="white"]) {
+    --paper: #000000;
+    --kerb: #0a0a0a;
+    --slab: #161616;
+    --slab-2: #262626;
+    --tide: #6e6e6e;
+    --running: #8f8f8f;
+    --graphite: #a8a8a8;
+    --ink: #f5f5f5;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="black"] {
+  --paper: #000000;
+  --kerb: #0a0a0a;
+  --slab: #161616;
+  --slab-2: #262626;
+  --tide: #6e6e6e;
+  --running: #8f8f8f;
+  --graphite: #a8a8a8;
+  --ink: #f5f5f5;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--graphite);
+  font: 400 15px/1.7 var(--mono);
+  transition: background-color 200ms var(--ease-out), color 200ms var(--ease-out);
+}
+
+a { color: var(--ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 6px; }
+
+p code, dd code, dt code, li code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--slab);
+  color: var(--ink);
+  font-size: .9em;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- quay wall: the name painted down the left edge ------------------ */
+
+.wall {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--wall);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.wall span {
+  font: 800 88px/.86 var(--stencil);
+  color: var(--slab-2);
+  text-transform: uppercase;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: -.04em;
+  user-select: none;
+}
+
+/* ---- page frame ------------------------------------------------------- */
+
+.top,
+main,
+.foot {
+  margin-left: var(--wall);
+  margin-right: var(--rail-gap);
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+
+.top {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding-top: 24px;
+  font-size: 12px;
+  color: var(--tide);
+}
+
+.top-mark {
+  display: none;
+  font: 800 30px/1 var(--stencil);
+  color: var(--ink);
+  text-transform: uppercase;
+}
+
+.top-link { margin-left: auto; color: var(--graphite); }
+
+.hero {
+  min-height: calc(100svh - 64px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 72px 0 88px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--tide);
+}
+
+h1 {
+  margin: 20px 0 28px;
+  font: 800 clamp(64px, 10vw, 132px)/.88 var(--stencil);
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: -.01em;
+}
+
+.lede { max-width: 54ch; margin: 0; }
+
+.try { margin: 18px 0 0; font-size: 12px; color: var(--tide); }
+.try-touch { display: none; }
+
+.block { padding: 96px 0; border-top: 1px solid var(--slab); }
+
+h2 {
+  margin: 0 0 14px;
+  font: 800 clamp(44px, 6vw, 64px)/.92 var(--stencil);
+  color: var(--ink);
+  text-transform: uppercase;
+}
+
+h3 { margin: 56px 0 18px; font: 700 14px/1.4 var(--mono); color: var(--ink); }
+
+.section-lede { max-width: 58ch; margin: 0 0 36px; }
+
+/* ---- code ------------------------------------------------------------- */
+
+.code {
+  position: relative;
+  max-width: 760px;
+  border: 1px solid var(--slab);
+  border-radius: 14px;
+  background: var(--kerb);
+}
+
+.code code {
+  display: block;
+  padding: 14px 88px 14px 16px;
+  overflow-x: auto;
+  font: 400 13px/1.65 var(--mono);
+  color: var(--ink);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.code-hero { margin-top: 36px; }
+.code-block code { padding-right: 16px; white-space: pre; overflow-wrap: normal; }
+.code .c { color: var(--tide); }
+
+.copy {
+  all: unset;
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  min-width: 38px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: var(--slab);
+  color: var(--ink);
+  font: 700 11px/1.2 var(--mono);
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 120ms var(--ease-out);
+}
+
+.copy:hover { background: var(--slab-2); }
+.copy:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* ---- rows: gestures, IPC --------------------------------------------- */
+
+.rows { margin: 0; border-top: 1px solid var(--slab); }
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(150px, 230px) 1fr;
+  gap: 24px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--slab);
+}
+
+.row dt { color: var(--ink); font-weight: 700; font-size: 14px; }
+.row dd { margin: 0; }
+
+/* ---- reading the rail ------------------------------------------------- */
+
+.legend {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+  margin: 0;
+}
+
+.legend figure { margin: 0; }
+
+.sample {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  margin-bottom: 12px;
+  border-radius: 16px;
+  background: var(--kerb);
+}
+
+.legend figcaption { font-size: 12px; line-height: 1.55; }
+.legend figcaption b { display: block; color: var(--ink); font-size: 13px; }
+
+.sample-markers { display: flex; flex-direction: column; gap: 4px; }
+
+/* ---- settings mock ---------------------------------------------------- */
+
+.settings { max-width: 760px; border-top: 1px solid var(--slab); }
+
+.setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--slab);
+}
+
+.setting-label { margin: 0; color: var(--ink); font-size: 14px; }
+.setting-hint { margin: 2px 0 0; color: var(--tide); font-size: 12px; line-height: 1.5; }
+.setting-value { margin: 0; flex: none; color: var(--ink); font-size: 12px; }
+
+.seg {
+  display: inline-flex;
+  flex: none;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--slab);
+}
+
+.seg button,
+.seg span {
+  all: unset;
+  padding: 5px 12px;
+  border-radius: 999px;
+  color: var(--graphite);
+  font: 400 11px/1.2 var(--mono);
+  white-space: nowrap;
+  transition: background-color 120ms var(--ease-out), color 120ms var(--ease-out);
+}
+
+.seg button { cursor: pointer; }
+.seg button:hover { background: var(--slab-2); }
+.seg button:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+
+.seg button[aria-pressed="true"],
+.seg .is-current {
+  background: color-mix(in srgb, var(--ink) 14%, transparent);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.note { max-width: 58ch; margin: 22px 0 0; font-size: 13px; }
+
+/* ---- install steps: a real sequence, so it is numbered --------------- */
+
+.steps {
+  display: grid;
+  gap: 44px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+}
+
+.steps li {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  column-gap: 12px;
+  counter-increment: step;
+}
+
+.steps li::before {
+  content: counter(step);
+  grid-row: 1 / span 3;
+  font: 800 34px/1 var(--stencil);
+  color: var(--slab-2);
+}
+
+.steps li > * { grid-column: 2; }
+.steps h3 { margin: 4px 0 14px; }
+.steps p { margin: 14px 0 0; max-width: 60ch; }
+
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 32px;
+  padding-top: 40px;
+  padding-bottom: 56px;
+  border-top: 1px solid var(--slab);
+  font-size: 12px;
+  color: var(--tide);
+}
+
+.foot p { margin: 0; }
+
+/* ---- the rail: docked to the viewport edge, as on a desktop ---------- */
+
+.rail {
+  position: fixed;
+  top: 50%;
+  right: 6px;
+  z-index: 30;
+  transform: translate(calc(100% + 12px), -50%);
+  transition: transform 260ms var(--ease-out);
+}
+
+.rail.is-revealed { transform: translate(0, -50%); }
+
+.rail-panel {
+  position: relative;
+  width: 82px;
+  padding: 10px;
+  border: 1px solid var(--slab);
+  border-radius: 22px;
+  background: var(--kerb);
+  box-shadow: 0 28px 56px -32px rgb(0 0 0 / .35);
+}
+
+.gear {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin: 0 auto 8px;
+  border-radius: 8px;
+  background: var(--slab);
+  color: var(--graphite);
+  transition: transform 120ms var(--ease-out), background-color 120ms, color 120ms;
+}
+
+.gear:hover { background: var(--slab-2); color: var(--ink); transform: scale(1.08); }
+.gear svg { width: 16px; height: 16px; }
+
+.rail-view {
+  position: relative;
+  height: 372px;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.rail-track {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transition: transform 170ms var(--ease-out);
+}
+
+.cell { width: 62px; height: 62px; }
+
+.tile {
+  all: unset;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  cursor: pointer;
+}
+
+.tile-face {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  color: var(--ink);
+  transition: background-color 140ms var(--ease-out), transform 140ms var(--ease-out);
+}
+
+.tile-face > svg { width: 32px; height: 32px; }
+
+.tile:hover .tile-face,
+.tile[aria-expanded="true"] .tile-face {
+  background: var(--slab);
+  transform: scale(1.06);
+}
+
+.tile:focus-visible { outline: none; }
+.tile:focus-visible .tile-face { box-shadow: 0 0 0 2px var(--ink); }
+
+.mini { display: grid; grid-template-columns: repeat(2, 14px); gap: 3px; }
+.mini svg { width: 14px; height: 14px; }
+
+.count {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  min-width: 13px;
+  height: 13px;
+  padding: 0 3px;
+  border: 1px solid var(--slab-2);
+  border-radius: 7px;
+  background: var(--kerb);
+  color: var(--graphite);
+  font: 700 7px/11px var(--mono);
+  text-align: center;
+}
+
+.pill {
+  position: absolute;
+  top: 50%;
+  left: 1px;
+  width: 3px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--running);
+  opacity: 0;
+  transform: translateY(-50%);
+  transition: height 160ms var(--ease-out), width 160ms var(--ease-out), opacity 160ms, background-color 160ms;
+}
+
+.pill.is-running { opacity: 1; }
+.pill.is-active { height: 20px; background: var(--ink); }
+
+/* Outside the panel: next to the running marks they read as one more. */
+.rail-markers {
+  position: absolute;
+  top: 50%;
+  left: -11px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transform: translateY(-50%);
+}
+
+.marker {
+  display: block;
+  width: 3px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--slab-2);
+  transition: height 180ms var(--ease-out), background-color 180ms;
+}
+
+.marker.is-current { height: 12px; background: var(--ink); }
+
+.rail-overlay {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: 8px 4px;
+  border-radius: 14px;
+  background: var(--kerb);
+  animation: overlay-in 160ms var(--ease-out);
+}
+
+@keyframes overlay-in { from { opacity: 0; transform: scale(.96); } }
+
+.overlay-title {
+  margin: 0 0 6px;
+  overflow: hidden;
+  color: var(--graphite);
+  font: 700 9px/1.3 var(--mono);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.overlay-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+
+.overlay-grid button {
+  all: unset;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background: var(--slab);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.overlay-grid button:hover { background: var(--slab-2); }
+.overlay-grid button:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+.overlay-grid svg { width: 16px; height: 16px; }
+
+.windows { display: grid; gap: 5px; }
+
+.window {
+  all: unset;
+  display: block;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--slab);
+  cursor: pointer;
+}
+
+.window:hover { background: var(--slab-2); }
+.window:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+.window.is-active { box-shadow: inset 0 0 0 1px var(--ink); }
+
+.window-shot {
+  position: relative;
+  display: block;
+  height: 30px;
+  margin: 4px 4px 0;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--paper);
+}
+
+.window-shot::before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 4px;
+  right: 12px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--slab-2);
+  box-shadow: 0 5px 0 var(--slab-2), 0 10px 0 var(--slab), 0 15px 0 var(--slab-2);
+}
+
+.window-title {
+  display: block;
+  padding: 2px 3px 4px;
+  overflow: hidden;
+  color: var(--ink);
+  font: 400 7px/1.3 var(--mono);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- small screens: the rail docks to the bottom edge instead -------- */
+
+@media (max-width: 820px) {
+  .wall { display: none; }
+
+  .top,
+  main,
+  .foot { margin-left: 0; margin-right: 0; }
+
+  .top-mark { display: block; }
+  .top-meta { display: none; }
+
+  .foot { padding-bottom: 132px; }
+  main { padding-bottom: 32px; }
+
+  .hero { min-height: auto; padding: 56px 0 72px; }
+
+  .try-desk { display: none; }
+  .try-touch { display: inline; }
+
+  .rail {
+    top: auto;
+    right: auto;
+    bottom: 8px;
+    left: 50%;
+    transform: translate(-50%, calc(100% + 16px));
+  }
+
+  .rail.is-revealed { transform: translate(-50%, 0); }
+
+  .rail-panel {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: min(460px, calc(100vw - 16px));
+    padding: 8px;
+  }
+
+  .gear { flex: none; margin: 0; }
+
+  .rail-view {
+    flex: 1;
+    height: 62px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .rail-view::-webkit-scrollbar { display: none; }
+
+  .rail-track { display: flex; }
+  .cell { flex: none; scroll-snap-align: start; }
+
+  .pill {
+    top: 1px;
+    left: 50%;
+    width: 4px;
+    height: 3px;
+    transform: translateX(-50%);
+  }
+
+  .pill.is-active { width: 20px; height: 3px; }
+
+  .rail-markers { display: none; }
+
+  .rail-overlay { display: flex; align-items: center; padding: 4px; overflow-x: auto; overflow-y: hidden; }
+  .overlay-title { display: none; }
+  .overlay-grid { grid-template-columns: repeat(4, 46px); }
+  .windows { grid-auto-flow: column; grid-auto-columns: 72px; }
+}
+
+@media (max-width: 640px) {
+  .code-block code { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .row { grid-template-columns: 1fr; gap: 4px; }
+  .legend { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .setting { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .seg { flex-wrap: wrap; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position: absolute" aria-hidden="true">
+  <symbol id="g-browser" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.9 5.2 3.9 8.5s-1.3 6.1-3.9 8.5c-2.6-2.4-3.9-5.2-3.9-8.5S9.4 5.9 12 3.5z"/></symbol>
+  <symbol id="g-terminal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M7 9.5l3 2.5-3 2.5M12.5 15H17"/></symbol>
+  <symbol id="g-files" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v7.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="g-notes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M14.5 3.5V7H18M9 11.5h6M9 15h6"/></symbol>
+  <symbol id="g-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 3.5V16H6.5A2.5 2.5 0 0 1 4 13.5z"/></symbol>
+  <symbol id="g-code" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 7.5L4 12l4.5 4.5M15.5 7.5L20 12l-4.5 4.5M13.2 5.5l-2.4 13"/></symbol>
+  <symbol id="g-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 7l8 6 8-6"/></symbol>
+  <symbol id="g-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></symbol>
+  <symbol id="g-music" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17.5V6l10-2v11.5"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/></symbol>
+  <symbol id="g-video" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="6" width="12" height="12" rx="2"/><path d="M15.5 10.5l5-3v9l-5-3z"/></symbol>
+  <symbol id="g-photos" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="9.5" r="1.5"/><path d="M4 17l5-5 4 4 3-3 4 4"/></symbol>
+  <symbol id="g-radio" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4M16.2 7.8a6 6 0 0 1 0 8.4M5 5a10 10 0 0 0 0 14M19 5a10 10 0 0 1 0 14"/></symbol>
+  <symbol id="g-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><circle cx="12" cy="12" r="7"/><path d="M12 2.5V5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/></symbol>
+</svg>
+
+<div class="wall" aria-hidden="true"><span>Quay</span></div>
+
+<header class="top">
+  <span class="top-mark">Quay</span>
+  <span class="top-meta">For Quickshell · wlr-layer-shell</span>
+  <a class="top-link" href="https://github.com/lunanoir21/quickshell-quay">Source on GitHub</a>
+</header>
+
+<main>
+  <section class="hero" aria-labelledby="hero-title">
+    <p class="eyebrow">Vertical app launcher for Quickshell</p>
+    <h1 id="hero-title">Your apps,<br>one notch<br>at a time.</h1>
+    <p class="lede">Quay keeps the apps you pin in a rail on the edge of the screen, marks the ones that are running, and moves one row per wheel notch — a phone home screen, turned on its side.</p>
+    <div class="code code-hero">
+      <code id="cmd-hero">git submodule add https://github.com/lunanoir21/quickshell-quay.git vendor/quay</code>
+      <button class="copy" type="button" data-copy="cmd-hero">Copy</button>
+    </div>
+    <p class="try"><span class="try-desk">→ Wheel over the rail on the right, or hold the pointer on the terminal.</span><span class="try-touch">↓ Swipe the rail at the bottom.</span></p>
+  </section>
+
+  <section class="block" id="gestures" aria-labelledby="gestures-title">
+    <h2 id="gestures-title">Gestures</h2>
+    <p class="section-lede">Everything happens on the rail itself. The demo rail answers to the wheel, clicks and holding the pointer; the rest are for your desktop.</p>
+    <dl class="rows">
+      <div class="row"><dt>Wheel</dt><dd>Moves one row, then snaps.</dd></div>
+      <div class="row"><dt>Click</dt><dd>Opens the app, or brings it forward. Click again to go through its windows.</dd></div>
+      <div class="row"><dt>Hold the pointer</dt><dd>An app with more than one window shows each window live, so you can pick one.</dd></div>
+      <div class="row"><dt>Right click</dt><dd>Pins or unpins.</dd></div>
+      <div class="row"><dt>Drag</dt><dd>Moves a tile to a new spot.</dd></div>
+      <div class="row"><dt>Drop on a tile</dt><dd>Makes a folder, or adds to one.</dd></div>
+    </dl>
+
+    <h3>Reading the rail</h3>
+    <div class="legend">
+      <figure>
+        <span class="sample" aria-hidden="true"><span class="tile-face"><svg viewBox="0 0 24 24"><use href="#g-browser"/></svg></span><span class="pill is-running"></span></span>
+        <figcaption><b>Short mark</b>Running.</figcaption>
+      </figure>
+      <figure>
+        <span class="sample" aria-hidden="true"><span class="tile-face"><svg viewBox="0 0 24 24"><use href="#g-chat"/></svg></span><span class="pill is-running is-active"></span></span>
+        <figcaption><b>Long mark</b>The app you are using.</figcaption>
+      </figure>
+      <figure>
+        <span class="sample" aria-hidden="true"><span class="tile-face"><svg viewBox="0 0 24 24"><use href="#g-terminal"/></svg><span class="count">3</span></span></span>
+        <figcaption><b>Number</b>Open windows, when there is more than one.</figcaption>
+      </figure>
+      <figure>
+        <span class="sample" aria-hidden="true"><span class="sample-markers"><span class="marker is-current"></span><span class="marker"></span></span></span>
+        <figcaption><b>Dots on the side</b>Which page of the rail is in view.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="block" id="settings" aria-labelledby="settings-title">
+    <h2 id="settings-title">Settings</h2>
+    <p class="section-lede">Quay carries its own settings panel, opened from the gear at the top of the rail. It needs no host settings app, so it behaves the same in any Quickshell config.</p>
+    <div class="settings">
+      <div class="setting">
+        <div>
+          <p class="setting-label">Theme</p>
+          <p class="setting-hint">Pure black or pure white. This page follows along.</p>
+        </div>
+        <div class="seg" role="group" aria-label="Theme">
+          <button type="button" data-theme-choice="black">Black</button>
+          <button type="button" data-theme-choice="white">White</button>
+        </div>
+      </div>
+      <div class="setting">
+        <div>
+          <p class="setting-label">Besides pinned apps</p>
+          <p class="setting-hint">What else the rail lists. The demo rail follows along.</p>
+        </div>
+        <div class="seg" role="group" aria-label="Besides pinned apps">
+          <button type="button" data-extras="pinned">Nothing</button>
+          <button type="button" data-extras="running">Open windows</button>
+          <button type="button" data-extras="recent">Recently used</button>
+        </div>
+      </div>
+      <div class="setting">
+        <div>
+          <p class="setting-label">Trigger</p>
+          <p class="setting-hint">Always on screen, sliding in when the pointer reaches the edge, or opened with a key.</p>
+        </div>
+        <div class="seg" aria-hidden="true"><span>Always</span><span class="is-current">Hover</span><span>Shortcut</span></div>
+      </div>
+      <div class="setting">
+        <div>
+          <p class="setting-label">Edge</p>
+          <p class="setting-hint">Dock it to any side. The wheel still moves it row by row.</p>
+        </div>
+        <div class="seg" aria-hidden="true"><span>Left</span><span class="is-current">Right</span><span>Top</span><span>Bottom</span></div>
+      </div>
+      <div class="setting">
+        <div>
+          <p class="setting-label">Grid</p>
+          <p class="setting-hint">Columns, rows per page, icon size and spacing.</p>
+        </div>
+        <p class="setting-value">1 column · 6 rows · 52 px</p>
+      </div>
+    </div>
+    <p class="note">Quay floats over your windows and reserves no space, so nothing is resized when it appears.</p>
+  </section>
+
+  <section class="block" id="install" aria-labelledby="install-title">
+    <h2 id="install-title">Install</h2>
+    <p class="section-lede">Needs Quickshell 0.3 or newer, a wlr-layer-shell compositor, and <code>python3</code>, <code>jq</code>, <code>bash</code> and <code>flock</code>.</p>
+    <ol class="steps">
+      <li>
+        <h3>Add it to your Quickshell config</h3>
+        <div class="code">
+          <code id="cmd-add">cd ~/.config/quickshell
+git submodule add https://github.com/lunanoir21/quickshell-quay.git vendor/quay</code>
+          <button class="copy" type="button" data-copy="cmd-add">Copy</button>
+        </div>
+      </li>
+      <li>
+        <h3>Load it from your shell root</h3>
+        <div class="code">
+          <code id="cmd-load">import "vendor/quay" as QuayModule
+
+ShellRoot {
+    QuayModule.QuayHost {}
+}</code>
+          <button class="copy" type="button" data-copy="cmd-load">Copy</button>
+        </div>
+        <p>That is the whole integration. To try it on its own first, run <code>quickshell -p vendor/quay/Main.qml</code>.</p>
+      </li>
+      <li>
+        <h3>Bind a key, for shortcut mode</h3>
+        <p>Quay never grabs global keys itself. Its settings panel works out the exact line for your setup under Trigger → Shortcut and copies it for you. On Hyprland it looks like this:</p>
+        <div class="code">
+          <code id="cmd-bind">bind = SUPER SHIFT, D, exec, qs -p ~/.config/quickshell/shell.qml ipc call quay toggle</code>
+          <button class="copy" type="button" data-copy="cmd-bind">Copy</button>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section class="block" id="configuration" aria-labelledby="configuration-title">
+    <h2 id="configuration-title">Configuration</h2>
+    <p class="section-lede">Settings live in <code>~/.config/quickshell/quay/settings.json</code>. Quay creates the file on first run and applies hand edits live. Values it does not recognise are ignored, so a typo cannot leave the rail out of reach.</p>
+    <div class="code code-block">
+<code>{
+  "appearance": { "theme": "black" },     <span class="c">// black | white</span>
+  "trigger": {
+    "mode": "hover",                       <span class="c">// always | hover | shortcut</span>
+    "edge": "right",                       <span class="c">// left | right | top | bottom</span>
+    "hoverRevealDelayMs": 90,
+    "hoverHideDelayMs": 400
+  },
+  "layout": { "columns": 1, "rows": 6, "iconSize": 52, "spacing": 10 },
+  "content": {
+    "extras": "running",                   <span class="c">// pinned | running | recent</span>
+    "recentLimit": 4
+  },
+  "items": [
+    { "type": "app", "id": "firefox", "position": 0 },
+    { "type": "folder", "id": "folder-media", "name": "Media", "position": 1,
+      "children": [{ "type": "app", "id": "mpv" }] }
+  ]
+}</code>
+    </div>
+
+    <h3>IPC</h3>
+    <dl class="rows">
+      <div class="row"><dt><code>ipc call quay toggle</code></dt><dd>Opens or closes the rail, in shortcut mode.</dd></div>
+      <div class="row"><dt><code>ipc call quay show</code> · <code>hide</code></dt><dd>Forces it open or closed, in shortcut mode.</dd></div>
+      <div class="row"><dt><code>ipc call quay settings</code></dt><dd>Opens or closes the settings panel.</dd></div>
+      <div class="row"><dt><code>ipc call quay refreshApps</code></dt><dd>Rescans installed applications.</dd></div>
+    </dl>
+  </section>
+</main>
+
+<footer class="foot">
+  <p>MIT licensed · made by <a href="https://github.com/lunanoir21">luna</a></p>
+  <p>Also by luna: <a href="https://lunanoir21.github.io/quickshell-dynamic-island/">Dynamic Island for Quickshell</a></p>
+</footer>
+
+<aside class="rail" id="rail" aria-label="Demo rail">
+  <div class="rail-panel">
+    <a class="gear" href="#settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#g-gear"/></svg></a>
+    <div class="rail-view">
+      <ul class="rail-track"></ul>
+      <div class="rail-overlay" hidden></div>
+    </div>
+    <div class="rail-markers" aria-hidden="true"></div>
+  </div>
+  <p class="visually-hidden" id="rail-status" aria-live="polite"></p>
+</aside>
+
+<script>
+(() => {
+  const root = document.documentElement;
+  const narrow = matchMedia("(max-width: 820px)");
+  const darkScheme = matchMedia("(prefers-color-scheme: dark)");
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+
+  // ---- copy buttons -------------------------------------------------------
+  document.querySelectorAll("[data-copy]").forEach((button) => {
+    let reset = 0;
+    button.addEventListener("click", async () => {
+      const source = document.getElementById(button.dataset.copy);
+      if (!source) return;
+      try {
+        await navigator.clipboard.writeText(source.textContent.trim());
+      } catch (e) {
+        return;
+      }
+      button.textContent = "✓";
+      clearTimeout(reset);
+      reset = setTimeout(() => { button.textContent = "Copy"; }, 1400);
+    });
+  });
+
+  // ---- theme: the same two choices Quay offers ----------------------------
+  const themeButtons = document.querySelectorAll("[data-theme-choice]");
+  const activeTheme = () => {
+    const chosen = root.dataset.theme;
+    if (chosen === "black" || chosen === "white") return chosen;
+    return darkScheme.matches ? "black" : "white";
+  };
+  const syncTheme = () => themeButtons.forEach((button) =>
+    button.setAttribute("aria-pressed", String(button.dataset.themeChoice === activeTheme())));
+  themeButtons.forEach((button) => button.addEventListener("click", () => {
+    root.dataset.theme = button.dataset.themeChoice;
+    try { localStorage.setItem("quay-theme", button.dataset.themeChoice); } catch (e) {}
+    syncTheme();
+  }));
+  darkScheme.addEventListener("change", syncTheme);
+  syncTheme();
+
+  // ---- the demo rail --------------------------------------------------------
+  const rail = document.getElementById("rail");
+  const view = rail.querySelector(".rail-view");
+  const track = rail.querySelector(".rail-track");
+  const overlay = rail.querySelector(".rail-overlay");
+  const markers = rail.querySelector(".rail-markers");
+  const status = document.getElementById("rail-status");
+
+  const ROWS = 6;
+  const CELL = 62;
+
+  const mail = { id: "mail", name: "Mail", running: true };
+  const pinned = [
+    { id: "browser", name: "Browser", running: true },
+    { id: "terminal", name: "Terminal", running: true, windows: ["~ — fish", "nvim README.md", "htop"], activeWindow: 0 },
+    { id: "files", name: "Files" },
+    { id: "notes", name: "Notes" },
+    { id: "media", name: "Media", children: [
+      { id: "music", name: "Music", running: true },
+      { id: "video", name: "Video" },
+      { id: "photos", name: "Photos" },
+      { id: "radio", name: "Radio" }
+    ] },
+    { id: "chat", name: "Chat", running: true },
+    { id: "code", name: "Code" }
+  ];
+  const extras = {
+    pinned: [],
+    running: [mail],
+    recent: [{ id: "calendar", name: "Calendar" }, mail]
+  };
+
+  let extrasMode = "running";
+  let focusedId = "terminal";
+  let row = 0;
+  let overlayFor = null;
+  let dwell = 0;
+  let wheelCarry = 0;
+
+  const entries = () => pinned.concat(extras[extrasMode]);
+  const entryById = (id) => entries().find((entry) => entry.id === id);
+  const maxRow = () => Math.max(0, entries().length - ROWS);
+  const glyph = (id) => `<svg viewBox="0 0 24 24" aria-hidden="true"><use href="#g-${id}"/></svg>`;
+
+  const stateOf = (entry) => entry.children
+    ? { running: entry.children.some((child) => child.running), active: entry.children.some((child) => child.id === focusedId) }
+    : { running: Boolean(entry.running), active: entry.id === focusedId };
+
+  const labelFor = (entry, state) => {
+    let label = entry.children ? `${entry.name} folder` : entry.name;
+    if (state.active) label += ", in use";
+    else if (state.running) label += ", running";
+    if (entry.windows && entry.windows.length > 1) label += `, ${entry.windows.length} windows`;
+    return label;
+  };
+
+  const tileMarkup = (entry) => {
+    const state = stateOf(entry);
+    const count = entry.windows ? entry.windows.length : 0;
+    const face = entry.children
+      ? `<span class="mini" aria-hidden="true">${entry.children.slice(0, 4).map((child) => glyph(child.id)).join("")}</span>`
+      : glyph(entry.id);
+    return `<li class="cell"><button type="button" class="tile" data-id="${entry.id}" aria-label="${labelFor(entry, state)}"${entry.children ? ' aria-haspopup="true"' : ""}>`
+      + `<span class="tile-face">${face}${count > 1 ? `<span class="count" aria-hidden="true">${count}</span>` : ""}</span>`
+      + `<span class="pill${state.running ? " is-running" : ""}${state.active ? " is-active" : ""}" aria-hidden="true"></span>`
+      + `</button></li>`;
+  };
+
+  // A tile is updated in place rather than re-rendered, so the running mark
+  // animates between its short and long forms the way it does on the desktop.
+  const updateStates = () => {
+    entries().forEach((entry) => {
+      const tile = track.querySelector(`[data-id="${entry.id}"]`);
+      if (!tile) return;
+      const state = stateOf(entry);
+      const pill = tile.querySelector(".pill");
+      pill.classList.toggle("is-running", state.running);
+      pill.classList.toggle("is-active", state.active);
+      tile.setAttribute("aria-label", labelFor(entry, state));
+    });
+  };
+
+  const setRow = (next) => {
+    row = Math.max(0, Math.min(maxRow(), next));
+    track.style.transform = narrow.matches ? "" : `translateY(${-row * CELL}px)`;
+    const dots = Array.from(markers.children);
+    const progress = maxRow() > 0 ? row / maxRow() : 0;
+    const current = dots.length > 1 ? Math.round(progress * (dots.length - 1)) : 0;
+    dots.forEach((dot, index) => dot.classList.toggle("is-current", index === current));
+  };
+
+  const render = () => {
+    const list = entries();
+    track.innerHTML = list.map(tileMarkup).join("");
+    const pages = Math.ceil(list.length / ROWS);
+    markers.innerHTML = pages > 1 ? '<span class="marker"></span>'.repeat(pages) : "";
+    setRow(row);
+  };
+
+  const announce = (entry) => {
+    status.textContent = entry.windows
+      ? `${entry.name}: ${entry.windows[entry.activeWindow || 0]}`
+      : `${entry.name} is in use`;
+  };
+
+  const activate = (app) => {
+    if (app.windows && app.windows.length > 1 && focusedId === app.id) {
+      app.activeWindow = ((app.activeWindow || 0) + 1) % app.windows.length;
+    }
+    app.running = true;
+    focusedId = app.id;
+    updateStates();
+    announce(app);
+  };
+
+  const closeOverlay = (restoreFocus) => {
+    if (!overlayFor) return;
+    const tile = track.querySelector(`[data-id="${overlayFor}"]`);
+    if (tile) tile.removeAttribute("aria-expanded");
+    overlay.hidden = true;
+    overlay.innerHTML = "";
+    overlayFor = null;
+    if (restoreFocus && tile) tile.focus({ preventScroll: true });
+  };
+
+  const openOverlay = (entry) => {
+    clearTimeout(dwell);
+    closeOverlay(false);
+    overlayFor = entry.id;
+    if (entry.children) {
+      overlay.innerHTML = `<p class="overlay-title">${entry.name}</p><div class="overlay-grid">`
+        + entry.children.map((child) => `<button type="button" data-launch="${child.id}" aria-label="${child.name}">${glyph(child.id)}</button>`).join("")
+        + "</div>";
+    } else {
+      overlay.innerHTML = `<p class="overlay-title">${entry.name}</p><div class="windows">`
+        + entry.windows.map((title, index) => {
+          const current = focusedId === entry.id && (entry.activeWindow || 0) === index;
+          return `<button type="button" class="window${current ? " is-active" : ""}" data-window="${index}">`
+            + `<span class="window-shot" aria-hidden="true"></span><span class="window-title">${title}</span></button>`;
+        }).join("")
+        + "</div>";
+    }
+    overlay.hidden = false;
+    const tile = track.querySelector(`[data-id="${entry.id}"]`);
+    if (tile) tile.setAttribute("aria-expanded", "true");
+    const first = overlay.querySelector("button");
+    if (first) first.focus({ preventScroll: true });
+  };
+
+  track.addEventListener("click", (event) => {
+    const tile = event.target.closest(".tile");
+    if (!tile) return;
+    const entry = entryById(tile.dataset.id);
+    if (!entry) return;
+    clearTimeout(dwell);
+    if (entry.children) openOverlay(entry);
+    else activate(entry);
+  });
+
+  // The same short dwell Quay uses before offering window previews.
+  track.addEventListener("pointerover", (event) => {
+    const tile = event.target.closest(".tile");
+    if (!tile || tile.contains(event.relatedTarget) || event.pointerType === "touch") return;
+    clearTimeout(dwell);
+    const entry = entryById(tile.dataset.id);
+    if (entry && entry.windows && entry.windows.length > 1 && overlayFor !== entry.id) {
+      dwell = setTimeout(() => openOverlay(entry), 400);
+    }
+  });
+
+  track.addEventListener("pointerout", (event) => {
+    const tile = event.target.closest(".tile");
+    if (tile && !tile.contains(event.relatedTarget)) clearTimeout(dwell);
+  });
+
+  overlay.addEventListener("click", (event) => {
+    const entry = entryById(overlayFor);
+    if (!entry) return;
+    const launch = event.target.closest("[data-launch]");
+    const win = event.target.closest("[data-window]");
+    if (launch && entry.children) {
+      const child = entry.children.find((item) => item.id === launch.dataset.launch);
+      closeOverlay(true);
+      if (child) activate(child);
+      return;
+    }
+    if (win) {
+      entry.activeWindow = Number(win.dataset.window);
+      entry.running = true;
+      focusedId = entry.id;
+      closeOverlay(true);
+      updateStates();
+      announce(entry);
+      return;
+    }
+    if (event.target === overlay) closeOverlay(true);
+  });
+
+  document.addEventListener("pointerdown", (event) => {
+    if (overlayFor && !rail.contains(event.target)) closeOverlay(false);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && overlayFor) closeOverlay(true);
+  });
+
+  // One row per notch. At either end the wheel is handed back to the page.
+  rail.addEventListener("wheel", (event) => {
+    if (narrow.matches || overlayFor) return;
+    const direction = Math.sign(event.deltaY);
+    if (!direction) return;
+    if ((direction < 0 && row === 0) || (direction > 0 && row === maxRow())) {
+      wheelCarry = 0;
+      return;
+    }
+    event.preventDefault();
+    wheelCarry += event.deltaMode === 1 ? event.deltaY * 40 : event.deltaY;
+    if (Math.abs(wheelCarry) >= 40) {
+      setRow(row + Math.sign(wheelCarry));
+      wheelCarry = 0;
+    }
+  }, { passive: false });
+
+  track.addEventListener("keydown", (event) => {
+    const tile = event.target.closest(".tile");
+    if (!tile) return;
+    const list = entries();
+    const index = list.findIndex((entry) => entry.id === tile.dataset.id);
+    const vertical = !narrow.matches;
+    const step = (vertical ? { ArrowDown: 1, ArrowUp: -1 } : { ArrowRight: 1, ArrowLeft: -1 })[event.key];
+    if (step) {
+      event.preventDefault();
+      const target = list[Math.max(0, Math.min(list.length - 1, index + step))];
+      const next = track.querySelector(`[data-id="${target.id}"]`);
+      if (next) next.focus();
+      return;
+    }
+    const entry = list[index];
+    const opens = vertical ? "ArrowLeft" : "ArrowUp";
+    if (event.key === opens && entry && (entry.children || (entry.windows && entry.windows.length > 1))) {
+      event.preventDefault();
+      openOverlay(entry);
+    }
+  });
+
+  track.addEventListener("focusin", (event) => {
+    if (narrow.matches) return;
+    const tile = event.target.closest(".tile");
+    if (!tile) return;
+    const index = entries().findIndex((entry) => entry.id === tile.dataset.id);
+    if (index < row) setRow(index);
+    else if (index >= row + ROWS) setRow(index - ROWS + 1);
+  });
+
+  view.addEventListener("scroll", () => { view.scrollTop = 0; });
+
+  // ---- "besides pinned apps" drives the demo rail -------------------------
+  const extrasButtons = document.querySelectorAll("[data-extras]");
+  const syncExtras = () => extrasButtons.forEach((button) =>
+    button.setAttribute("aria-pressed", String(button.dataset.extras === extrasMode)));
+  extrasButtons.forEach((button) => button.addEventListener("click", () => {
+    extrasMode = button.dataset.extras;
+    if (!entryById(focusedId) && !pinned.some((entry) => entry.children && entry.children.some((child) => child.id === focusedId))) {
+      focusedId = "terminal";
+    }
+    closeOverlay(false);
+    syncExtras();
+    render();
+  }));
+  syncExtras();
+
+  narrow.addEventListener("change", () => {
+    closeOverlay(false);
+    setRow(row);
+  });
+
+  render();
+
+  const reveal = () => rail.classList.add("is-revealed");
+  if (reducedMotion.matches) reveal();
+  else setTimeout(reveal, 320);
+})();
+</script>
+</body>
+</html>
