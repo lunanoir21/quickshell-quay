@@ -1,0 +1,5 @@
+singleton QuayApps 1.0 QuayApps.qml
+singleton QuayModel 1.0 QuayModel.qml
+singleton QuayStore 1.0 QuayStore.qml
+singleton QuayTheme 1.0 QuayTheme.qml
+singleton QuayWindows 1.0 QuayWindows.qml

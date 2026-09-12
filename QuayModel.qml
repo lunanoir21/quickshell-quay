@@ -1,0 +1,242 @@
+pragma Singleton
+
+import QtQuick
+import Quickshell
+
+// Merges the persisted layout with live window state into the single list the
+// views render, and owns every mutation of that layout.
+Singleton {
+    id: root
+
+    readonly property var pinnedItems: {
+        let items = (QuayStore.items || []).slice();
+        items.sort((a, b) => (a.position || 0) - (b.position || 0));
+        return items;
+    }
+
+    readonly property var pinnedIds: {
+        let ids = [];
+        let items = root.pinnedItems;
+        for (let i = 0; i < items.length; i++) {
+            let item = items[i];
+            if (item.type === "folder") {
+                let children = item.children || [];
+                for (let c = 0; c < children.length; c++) ids.push(children[c].id);
+            } else {
+                ids.push(item.id);
+            }
+        }
+        return ids;
+    }
+
+    // Pinned entries first, in the user's order. What follows them is the
+    // user's choice: nothing, whatever else is open, or whatever was used last.
+    readonly property var entries: {
+        let out = [];
+        let items = root.pinnedItems;
+
+        for (let i = 0; i < items.length; i++) {
+            let item = items[i];
+            if (item.type === "folder") {
+                out.push(root.describeFolder(item));
+            } else {
+                out.push(root.describeApp(item.id, true));
+            }
+        }
+
+        let pinned = root.pinnedIds.map(id => String(id).toLowerCase());
+        let candidates = [];
+
+        if (QuayStore.extras === "running") {
+            candidates = QuayWindows.runningIds;
+        } else if (QuayStore.extras === "recent") {
+            candidates = (QuayStore.recent || []).slice(0, QuayStore.recentLimit);
+        }
+
+        for (let c = 0; c < candidates.length; c++) {
+            let entry = QuayApps.entryFor(candidates[c]);
+            let id = entry ? entry.desktopId : String(candidates[c]);
+            if (pinned.indexOf(String(id).toLowerCase()) !== -1) continue;
+            if (out.some(existing => existing.type === "app" && existing.id === id)) continue;
+            out.push(root.describeApp(id, false));
+        }
+
+        return out;
+    }
+
+    function describeApp(id, isPinned) {
+        let entry = QuayApps.entryFor(id);
+        return {
+            "key": "app:" + id,
+            "type": "app",
+            "id": id,
+            "name": entry ? entry.name : id,
+            "iconSource": entry ? QuayApps.iconSource(entry.icon) : "",
+            "isPinned": isPinned,
+            "isRunning": QuayWindows.isRunning(id),
+            "isActive": QuayWindows.isActive(id),
+            "windowCount": QuayWindows.windowCount(id),
+            "children": []
+        };
+    }
+
+    function describeFolder(item) {
+        let children = (item.children || []).map(child => root.describeApp(child.id, true));
+        let running = children.some(child => child.isRunning);
+        return {
+            "key": "folder:" + item.id,
+            "type": "folder",
+            "id": item.id,
+            "name": item.name || "Klasör",
+            "iconSource": "",
+            "isPinned": true,
+            "isRunning": running,
+            "isActive": children.some(child => child.isActive),
+            "windowCount": children.reduce((sum, child) => sum + child.windowCount, 0),
+            "children": children
+        };
+    }
+
+    function activate(id) {
+        if (!QuayWindows.focus(id)) QuayApps.launch(id);
+    }
+
+    // --- layout mutations -------------------------------------------------
+
+    function commit(items) {
+        for (let i = 0; i < items.length; i++) items[i].position = i;
+        QuayStore.setItems(items);
+    }
+
+    function isPinned(id) {
+        return root.pinnedIds.map(p => String(p).toLowerCase()).indexOf(String(id).toLowerCase()) !== -1;
+    }
+
+    function pin(id) {
+        if (root.isPinned(id)) return;
+        let items = root.pinnedItems.slice();
+        items.push({ "type": "app", "id": id, "position": items.length });
+        root.commit(items);
+    }
+
+    function insertAt(id, index) {
+        if (root.isPinned(id)) {
+            let from = root.pinnedItems.findIndex(item => item.type === "app"
+                && String(item.id).toLowerCase() === String(id).toLowerCase());
+            if (from !== -1) root.move(from, index);
+            return;
+        }
+        let items = root.pinnedItems.slice();
+        let target = Math.max(0, Math.min(items.length, index));
+        items.splice(target, 0, { "type": "app", "id": id });
+        root.commit(items);
+    }
+
+    function unpin(id) {
+        let wanted = String(id).toLowerCase();
+        let items = [];
+        let source = root.pinnedItems;
+
+        for (let i = 0; i < source.length; i++) {
+            let item = source[i];
+            if (item.type === "folder") {
+                let kept = (item.children || []).filter(child => String(child.id).toLowerCase() !== wanted);
+                if (kept.length > 0) {
+                    items.push({ "type": "folder", "id": item.id, "name": item.name, "children": kept });
+                }
+            } else if (String(item.id).toLowerCase() !== wanted) {
+                items.push(item);
+            }
+        }
+        root.commit(items);
+    }
+
+    function togglePin(id) {
+        if (root.isPinned(id)) root.unpin(id);
+        else root.pin(id);
+    }
+
+    function move(fromIndex, toIndex) {
+        let items = root.pinnedItems.slice();
+        if (fromIndex < 0 || fromIndex >= items.length) return;
+        let clamped = Math.max(0, Math.min(items.length - 1, toIndex));
+        if (clamped === fromIndex) return;
+        items.splice(clamped, 0, items.splice(fromIndex, 1)[0]);
+        root.commit(items);
+    }
+
+    function newFolderId() {
+        return "folder-" + Date.now().toString(36) + "-" + Math.floor(Math.random() * 1e6).toString(36);
+    }
+
+    // Dropping one icon onto another is the gesture that makes a folder, so
+    // the two apps involved are removed from the top level and become its
+    // first members.
+    function groupInto(targetIndex, sourceIndex) {
+        let items = root.pinnedItems.slice();
+        if (targetIndex === sourceIndex) return;
+        if (targetIndex < 0 || targetIndex >= items.length) return;
+        if (sourceIndex < 0 || sourceIndex >= items.length) return;
+
+        let target = items[targetIndex];
+        let source = items[sourceIndex];
+        if (source.type === "folder") return;
+
+        if (target.type === "folder") {
+            let children = (target.children || []).slice();
+            children.push({ "type": "app", "id": source.id });
+            items[targetIndex] = { "type": "folder", "id": target.id, "name": target.name, "children": children };
+            items.splice(sourceIndex, 1);
+        } else {
+            items[targetIndex] = {
+                "type": "folder",
+                "id": root.newFolderId(),
+                "name": "Yeni klasör",
+                "children": [{ "type": "app", "id": target.id }, { "type": "app", "id": source.id }]
+            };
+            items.splice(sourceIndex, 1);
+        }
+        root.commit(items);
+    }
+
+    function renameFolder(folderId, name) {
+        let items = root.pinnedItems.map(item => {
+            if (item.type !== "folder" || item.id !== folderId) return item;
+            return { "type": "folder", "id": item.id, "name": name, "children": item.children || [] };
+        });
+        root.commit(items);
+    }
+
+    function dissolveFolder(folderId) {
+        let items = [];
+        let source = root.pinnedItems;
+        for (let i = 0; i < source.length; i++) {
+            let item = source[i];
+            if (item.type === "folder" && item.id === folderId) {
+                let children = item.children || [];
+                for (let c = 0; c < children.length; c++) items.push({ "type": "app", "id": children[c].id });
+            } else {
+                items.push(item);
+            }
+        }
+        root.commit(items);
+    }
+
+    function removeFromFolder(folderId, id) {
+        let wanted = String(id).toLowerCase();
+        let items = [];
+        let source = root.pinnedItems;
+
+        for (let i = 0; i < source.length; i++) {
+            let item = source[i];
+            if (item.type === "folder" && item.id === folderId) {
+                let kept = (item.children || []).filter(child => String(child.id).toLowerCase() !== wanted);
+                if (kept.length > 0) items.push({ "type": "folder", "id": item.id, "name": item.name, "children": kept });
+                items.push({ "type": "app", "id": id });
+            } else {
+                items.push(item);
+            }
+        }
+        root.commit(items);
+    }
+}
