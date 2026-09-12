@@ -1,6 +1,9 @@
 <div align="center">
 
-<img src="docs/logo.svg" width="96" alt="Quay logo">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/logo-dark.svg">
+  <img src="docs/logo-light.svg" width="96" alt="Quay logo">
+</picture>
 
 # Quay for Quickshell
 
