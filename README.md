@@ -17,7 +17,7 @@ notch.
 
 **[Website](https://lunanoir21.github.io/quickshell-quay/)** · [Türkçe README](README.tr.md)
 
-<!-- screenshot: docs/screenshots/rail.png -->
+<img src="docs/screenshots/rail.png" width="640" alt="The rail docked to the right edge of the screen, in the black theme and in the white theme">
 
 </div>
 
@@ -55,6 +55,17 @@ and one line.
   of the rail — no host settings app needed.
 - **Frame-time correct motion.** Drag autoscroll is integrated from real frame
   time, so it moves at the same speed on a 60 Hz panel and a 165 Hz one.
+
+## A closer look
+
+<p align="center">
+  <img src="docs/screenshots/preview.png" height="360" alt="Window previews for the terminal, open inside the rail">
+  &nbsp;
+  <img src="docs/screenshots/settings.png" height="360" alt="Quay's settings panel on the Appearance pane">
+</p>
+
+Window previews for an app with two terminals, and Quay's own settings panel.
+Captured on Hyprland at 1920×1080.
 
 ## Requirements
 

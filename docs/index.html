@@ -393,6 +393,29 @@ h3 { margin: 56px 0 18px; font: 700 14px/1.4 var(--mono); color: var(--ink); }
 
 .foot p { margin: 0; }
 
+/* ---- screenshots ------------------------------------------------------ */
+
+.shots {
+  display: grid;
+  grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
+  gap: 16px;
+  max-width: 760px;
+}
+
+.shots figure { display: grid; align-content: start; gap: 8px; margin: 0; }
+.shots .wide { grid-column: 1 / -1; }
+
+.shots img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--slab);
+  border-radius: 14px;
+  background: var(--kerb);
+}
+
+.shots figcaption { font-size: 12px; color: var(--tide); }
+
 /* ---- the rail: docked to the viewport edge, as on a desktop ---------- */
 
 .rail {
@@ -698,6 +721,7 @@ h3 { margin: 56px 0 18px; font: 700 14px/1.4 var(--mono); color: var(--ink); }
   .code-block code { white-space: pre-wrap; overflow-wrap: anywhere; }
   .row { grid-template-columns: 1fr; gap: 4px; }
   .legend { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .shots { grid-template-columns: 1fr; }
   .setting { flex-direction: column; align-items: flex-start; gap: 10px; }
   .seg { flex-wrap: wrap; }
 }
@@ -780,6 +804,25 @@ h3 { margin: 56px 0 18px; font: 700 14px/1.4 var(--mono); color: var(--ink); }
       <figure>
         <span class="sample" aria-hidden="true"><span class="sample-markers"><span class="marker is-current"></span><span class="marker"></span></span></span>
         <figcaption><b>Dots on the side</b>Which page of the rail is in view.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="block" id="desktop" aria-labelledby="desktop-title">
+    <h2 id="desktop-title">On a desktop</h2>
+    <p class="section-lede">Captured on Hyprland at 1920×1080: the rail in both themes, window previews for a terminal with two windows, and Quay's own settings panel.</p>
+    <div class="shots">
+      <figure class="wide">
+        <img src="screenshots/rail.png" width="1040" height="660" loading="lazy" alt="The rail docked to the right edge of the screen, in the black theme and in the white theme">
+        <figcaption>Black and white themes</figcaption>
+      </figure>
+      <figure>
+        <img src="screenshots/preview.png" width="260" height="540" loading="lazy" alt="Window previews for the terminal, open inside the rail">
+        <figcaption>Window previews</figcaption>
+      </figure>
+      <figure>
+        <img src="screenshots/settings.png" width="760" height="580" loading="lazy" alt="Quay's settings panel on the Appearance pane">
+        <figcaption>Settings panel</figcaption>
       </figure>
     </div>
   </section>

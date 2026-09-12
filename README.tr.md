@@ -17,7 +17,7 @@ adımında bir satır kayan tek bir rayda.
 
 **[Web sitesi](https://lunanoir21.github.io/quickshell-quay/)** · [English README](README.md)
 
-<!-- ekran görüntüsü: docs/screenshots/rail.png -->
+<img src="docs/screenshots/rail.png" width="640" alt="Ekranın sağ kenarına yerleşmiş ray, siyah ve beyaz temada">
 
 </div>
 
@@ -56,6 +56,17 @@ satır sürer.
   ayrı bir ayarlar uygulaması gerekmez.
 - **Kare süresine göre hareket.** Sürüklerken otomatik kaydırma gerçek kare
   süresiyle hesaplanır; 60 Hz ve 165 Hz ekranda aynı hızda ilerler.
+
+## Yakından
+
+<p align="center">
+  <img src="docs/screenshots/preview.png" height="360" alt="Rayın içinde açık duran terminal pencere önizlemeleri">
+  &nbsp;
+  <img src="docs/screenshots/settings.png" height="360" alt="Quay'in ayar paneli, Görünüm bölümünde">
+</p>
+
+İki terminal penceresi olan bir uygulamanın pencere önizlemeleri ve Quay'in
+kendi ayar paneli. Hyprland'de 1920×1080 çözünürlükte çekildi.
 
 ## Gereksinimler
 
