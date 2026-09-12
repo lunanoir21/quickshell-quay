@@ -46,7 +46,11 @@ PanelWindow {
     exclusiveZone: 0
     mask: Region { item: root.revealed ? rail : hotEdgeArea }
 
-    onRevealedChanged: if (!root.revealed) grid.closeFolder()
+    onRevealedChanged: {
+        if (root.revealed) return;
+        grid.closeFolder();
+        grid.hidePreview();
+    }
 
     Connections {
         target: QuayStore

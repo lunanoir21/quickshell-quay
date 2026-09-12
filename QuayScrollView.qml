@@ -191,6 +191,22 @@ Item {
         }
     }
 
+    // A preview belongs to the pointer: once it has left the grid for longer
+    // than a flick across the edge, the preview goes with it.
+    HoverHandler {
+        id: viewHover
+        onHoveredChanged: {
+            if (viewHover.hovered) previewCloseDelay.stop();
+            else previewCloseDelay.restart();
+        }
+    }
+
+    Timer {
+        id: previewCloseDelay
+        interval: 350
+        onTriggered: root.hidePreview()
+    }
+
     WheelHandler {
         enabled: root.interactive && root.dragIndex === -1
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
