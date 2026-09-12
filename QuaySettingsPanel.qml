@@ -1,0 +1,561 @@
+pragma ComponentBehavior: Bound
+
+import QtQuick
+import QtQuick.Layouts
+import Quickshell
+import Quickshell.Io
+import Quickshell.Wayland
+
+// Quay's own settings surface: a section list on the left, one focused pane on
+// the right. Everything configurable lives here, so a standalone install needs
+// no host settings app.
+PanelWindow {
+    id: root
+
+    required property var quayScreen
+    screen: root.quayScreen
+
+    property string section: "appearance"
+
+    signal dismissed()
+
+    readonly property var sections: [
+        { key: "appearance", glyph: "󰸌", label: qsTr("Appearance"), hint: qsTr("Theme") },
+        { key: "trigger", glyph: "󰊫", label: qsTr("Trigger"), hint: qsTr("How it appears") },
+        { key: "grid", glyph: "󰕰", label: qsTr("Grid"), hint: qsTr("Size and layout") },
+        { key: "apps", glyph: "󰀻", label: qsTr("Applications"), hint: qsTr("Pins and folders") }
+    ]
+
+    WlrLayershell.namespace: "quay-settings"
+    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+    color: "transparent"
+    focusable: true
+
+    implicitWidth: 760
+    implicitHeight: 580
+
+    Rectangle {
+        id: card
+        anchors.fill: parent
+        anchors.margins: 8
+        radius: QuayTheme.radiusLarge
+        color: QuayTheme.base
+        border.width: 1
+        border.color: QuayTheme.alpha(QuayTheme.text, 0.10)
+
+        focus: true
+        Keys.onEscapePressed: root.dismissed()
+
+        RowLayout {
+            anchors.fill: parent
+            anchors.margins: 1
+            spacing: 0
+
+            ColumnLayout {
+                Layout.preferredWidth: 196
+                Layout.fillHeight: true
+                Layout.margins: 16
+                spacing: 2
+
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    Layout.bottomMargin: 14
+                    spacing: 1
+
+                    Text {
+                        text: "Quay"
+                        color: QuayTheme.text
+                        font.family: QuayTheme.mono
+                        font.pixelSize: 15
+                        font.weight: Font.DemiBold
+                    }
+
+                    Text {
+                        text: qsTr("Vertical application launcher")
+                        color: QuayTheme.overlay0
+                        font.family: QuayTheme.mono
+                        font.pixelSize: 9
+                    }
+                }
+
+                Repeater {
+                    model: root.sections
+
+                    QuayNavRow {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        glyph: modelData.glyph
+                        label: modelData.label
+                        hint: modelData.hint
+                        current: root.section === modelData.key
+                        onActivated: {
+                            sectionLoader.opacity = 0;
+                            root.section = modelData.key;
+                        }
+                    }
+                }
+
+                Item { Layout.fillHeight: true }
+
+                Text {
+                    Layout.fillWidth: true
+                    text: qsTr("Esc closes this panel")
+                    color: QuayTheme.overlay0
+                    font.family: QuayTheme.mono
+                    font.pixelSize: 8
+                }
+            }
+
+            Rectangle {
+                Layout.preferredWidth: 1
+                Layout.fillHeight: true
+                Layout.topMargin: 14
+                Layout.bottomMargin: 14
+                color: QuayTheme.alpha(QuayTheme.text, 0.07)
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.margins: 16
+                spacing: 12
+
+                RowLayout {
+                    Layout.fillWidth: true
+
+                    Text {
+                        Layout.fillWidth: true
+                        text: root.sections.find(s => s.key === root.section).label.toUpperCase()
+                        color: QuayTheme.subtext0
+                        font.family: QuayTheme.mono
+                        font.pixelSize: 9
+                        font.weight: Font.DemiBold
+                        font.letterSpacing: 0.7
+                    }
+
+                    Item {
+                        Layout.preferredWidth: 22
+                        Layout.preferredHeight: 22
+
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: QuayTheme.radiusSmall
+                            color: closeHover.hovered ? QuayTheme.alpha(QuayTheme.surface1, 0.8) : "transparent"
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "󰅖"
+                            color: closeHover.hovered ? QuayTheme.text : QuayTheme.subtext0
+                            font.family: QuayTheme.mono
+                            font.pixelSize: 11
+                        }
+
+                        HoverHandler { id: closeHover }
+                        TapHandler { onTapped: root.dismissed() }
+
+                        Accessible.role: Accessible.Button
+                        Accessible.name: qsTr("Close settings")
+                    }
+                }
+
+                Loader {
+                    id: sectionLoader
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    opacity: 0
+                    sourceComponent: {
+                        if (root.section === "appearance") return appearancePane;
+                        if (root.section === "trigger") return triggerPane;
+                        if (root.section === "grid") return gridPane;
+                        return appsPane;
+                    }
+                    onLoaded: sectionLoader.opacity = 1
+
+                    Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
+                }
+            }
+        }
+    }
+
+    Component {
+        id: appearancePane
+
+        ColumnLayout {
+            spacing: 12
+
+            QuaySettingRow {
+                label: qsTr("Theme")
+                hint: qsTr("Pure monochrome, in either direction")
+
+                QuaySegmented {
+                    options: [
+                        { value: "black", label: qsTr("Black") },
+                        { value: "white", label: qsTr("White") }
+                    ]
+                    currentValue: QuayStore.theme
+                    onPicked: value => QuayStore.setOption("appearance.theme", value)
+                }
+            }
+
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 96
+                radius: QuayTheme.radiusMedium
+                color: QuayTheme.alpha(QuayTheme.surface0, 0.35)
+                border.width: 1
+                border.color: QuayTheme.alpha(QuayTheme.text, 0.06)
+
+                Row {
+                    anchors.centerIn: parent
+                    spacing: 10
+
+                    Repeater {
+                        model: QuayModel.entries.slice(0, 5)
+
+                        Rectangle {
+                            id: previewTile
+                            required property var modelData
+                            width: 44
+                            height: 44
+                            radius: QuayTheme.radiusMedium
+                            color: QuayTheme.alpha(QuayTheme.surface1, 0.6)
+
+                            Image {
+                                anchors.centerIn: parent
+                                source: previewTile.modelData.iconSource
+                                asynchronous: true
+                                width: 26
+                                height: 26
+                                sourceSize.width: 26
+                                sourceSize.height: 26
+                                fillMode: Image.PreserveAspectFit
+                            }
+
+                            Rectangle {
+                                visible: previewTile.modelData.isRunning
+                                width: 3
+                                height: previewTile.modelData.isActive ? 16 : 4
+                                radius: 1.5
+                                color: previewTile.modelData.isActive ? QuayTheme.accent : QuayTheme.running
+                                x: 2
+                                y: (parent.height - height) / 2
+                            }
+                        }
+                    }
+                }
+
+                Text {
+                    anchors.bottom: parent.bottom
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.bottomMargin: 8
+                    text: qsTr("Preview")
+                    color: QuayTheme.overlay0
+                    font.family: QuayTheme.mono
+                    font.pixelSize: 8
+                }
+            }
+
+            Item { Layout.fillHeight: true }
+        }
+    }
+
+    Component {
+        id: triggerPane
+
+        ColumnLayout {
+            spacing: 12
+
+            QuaySettingRow {
+                label: qsTr("Mode")
+                hint: qsTr("How the rail comes on screen")
+
+                QuaySegmented {
+                    options: [
+                        { value: "always", label: qsTr("Always") },
+                        { value: "hover", label: qsTr("Hover") },
+                        { value: "shortcut", label: qsTr("Shortcut") }
+                    ]
+                    currentValue: QuayStore.triggerMode
+                    onPicked: value => QuayStore.setOption("trigger.mode", value)
+                }
+            }
+
+            QuaySettingRow {
+                label: qsTr("Edge")
+
+                QuaySegmented {
+                    options: [
+                        { value: "left", label: qsTr("Left") },
+                        { value: "right", label: qsTr("Right") },
+                        { value: "top", label: qsTr("Top") },
+                        { value: "bottom", label: qsTr("Bottom") }
+                    ]
+                    currentValue: QuayStore.triggerEdge
+                    onPicked: value => QuayStore.setOption("trigger.edge", value)
+                }
+            }
+
+            QuaySettingRow {
+                label: qsTr("Reveal delay")
+                hint: qsTr("Pointer dwell before it slides in")
+                enabled: QuayStore.triggerMode === "hover"
+
+                QuayStepper {
+                    from: 0
+                    to: 600
+                    stepSize: 10
+                    suffix: "ms"
+                    value: QuayStore.hoverRevealDelayMs
+                    onMoved: value => QuayStore.hoverRevealDelayMs = value
+                    onCommitted: value => QuayStore.setOption("trigger.hoverRevealDelayMs", value)
+                }
+            }
+
+            QuaySettingRow {
+                label: qsTr("Hide delay")
+                hint: qsTr("Grace period after the pointer leaves")
+                enabled: QuayStore.triggerMode === "hover"
+
+                QuayStepper {
+                    from: 0
+                    to: 1500
+                    stepSize: 20
+                    suffix: "ms"
+                    value: QuayStore.hoverHideDelayMs
+                    onMoved: value => QuayStore.hoverHideDelayMs = value
+                    onCommitted: value => QuayStore.setOption("trigger.hoverHideDelayMs", value)
+                }
+            }
+
+            ColumnLayout {
+                id: shortcutHelp
+                Layout.fillWidth: true
+                visible: QuayStore.triggerMode === "shortcut"
+                spacing: 6
+
+                // IPC only reaches this instance through the same selector it was
+                // launched with (-p .../Shell.qml, -p .../Main.qml, -c name, or
+                // none), and QML cannot see that, so the process asks its own
+                // command line.
+                property string instanceSelector: ""
+                readonly property string toggleCommand: "qs " + (shortcutHelp.instanceSelector ? shortcutHelp.instanceSelector + " " : "") + "ipc call quay toggle"
+                readonly property string hyprBind: "bind = SUPER SHIFT, D, exec, " + shortcutHelp.toggleCommand
+                property bool justCopied: false
+
+                function selectorFrom(args) {
+                    for (let i = 1; i < args.length; i++) {
+                        let arg = args[i];
+                        let path = "";
+                        if ((arg === "-p" || arg === "--path") && i + 1 < args.length) path = args[i + 1];
+                        else if (arg.startsWith("--path=")) path = arg.slice(7);
+                        if (path) {
+                            let absolute = path.startsWith("/") ? path
+                                : (path.endsWith(".qml") ? Quickshell.shellDir + "/" + path.split("/").pop() : Quickshell.shellDir);
+                            return "-p " + (absolute.indexOf(" ") !== -1 ? "'" + absolute + "'" : absolute);
+                        }
+                        if ((arg === "-c" || arg === "--config") && i + 1 < args.length) return "-c " + args[i + 1];
+                        if (arg.startsWith("--config=")) return "-c " + arg.slice(9);
+                    }
+                    return "";
+                }
+
+                Process {
+                    running: true
+                    command: ["sh", "-c", "tr '\\0' '\\n' < /proc/$PPID/cmdline"]
+                    stdout: StdioCollector {
+                        onStreamFinished: shortcutHelp.instanceSelector = shortcutHelp.selectorFrom(String(this.text || "").split("\n"))
+                    }
+                }
+
+                Timer {
+                    id: copiedResetTimer
+                    interval: 1400
+                    onTriggered: shortcutHelp.justCopied = false
+                }
+
+                Text {
+                    Layout.fillWidth: true
+                    text: qsTr("Quay has no global hotkey of its own — bind one in your compositor. On Hyprland, add this to your config:")
+                    color: QuayTheme.overlay0
+                    font.family: QuayTheme.mono
+                    font.pixelSize: 9
+                    wrapMode: Text.WordWrap
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        implicitHeight: bindText.implicitHeight + 14
+                        radius: QuayTheme.radiusSmall
+                        color: QuayTheme.alpha(QuayTheme.surface0, 0.6)
+                        border.width: 1
+                        border.color: QuayTheme.alpha(QuayTheme.text, 0.07)
+
+                        Text {
+                            id: bindText
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.margins: 8
+                            text: shortcutHelp.hyprBind
+                            color: QuayTheme.text
+                            font.family: QuayTheme.mono
+                            font.pixelSize: 9
+                            wrapMode: Text.WrapAnywhere
+                        }
+                    }
+
+                    Rectangle {
+                        Layout.preferredWidth: 60
+                        Layout.preferredHeight: 26
+                        radius: QuayTheme.radiusSmall
+                        color: copyHover.hovered ? QuayTheme.alpha(QuayTheme.accent, 0.22) : QuayTheme.alpha(QuayTheme.surface1, 0.6)
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: shortcutHelp.justCopied ? "✓" : qsTr("Copy")
+                            color: QuayTheme.text
+                            font.family: QuayTheme.mono
+                            font.pixelSize: 9
+                        }
+
+                        HoverHandler { id: copyHover }
+                        TapHandler {
+                            onTapped: {
+                                Quickshell.execDetached(["sh", "-c",
+                                    "printf %s " + JSON.stringify(shortcutHelp.hyprBind) + " | wl-copy"]);
+                                shortcutHelp.justCopied = true;
+                                copiedResetTimer.restart();
+                            }
+                        }
+
+                        Accessible.role: Accessible.Button
+                        Accessible.name: qsTr("Copy Hyprland bind line")
+                    }
+                }
+
+                Text {
+                    Layout.fillWidth: true
+                    text: qsTr("Other compositors: bind any key to the command above (drop the leading \"bind = SUPER SHIFT, D, exec, \").")
+                    color: QuayTheme.overlay0
+                    font.family: QuayTheme.mono
+                    font.pixelSize: 8
+                    wrapMode: Text.WordWrap
+                }
+            }
+
+            Item { Layout.fillHeight: true }
+        }
+    }
+
+    Component {
+        id: gridPane
+
+        ColumnLayout {
+            spacing: 12
+
+            QuaySettingRow {
+                label: qsTr("Columns")
+                hint: qsTr("Tiles across the rail")
+
+                QuayStepper {
+                    from: 1
+                    to: 6
+                    value: QuayStore.columns
+                    onMoved: value => QuayStore.columns = value
+                    onCommitted: value => QuayStore.setOption("layout.columns", value)
+                }
+            }
+
+            QuaySettingRow {
+                label: qsTr("Rows per page")
+                hint: qsTr("One wheel notch moves one row")
+
+                QuayStepper {
+                    from: 2
+                    to: 16
+                    value: QuayStore.rows
+                    onMoved: value => QuayStore.rows = value
+                    onCommitted: value => QuayStore.setOption("layout.rows", value)
+                }
+            }
+
+            QuaySettingRow {
+                label: qsTr("Icon size")
+
+                QuayStepper {
+                    from: 28
+                    to: 96
+                    stepSize: 2
+                    suffix: "px"
+                    value: QuayStore.iconSize
+                    onMoved: value => QuayStore.iconSize = value
+                    onCommitted: value => QuayStore.setOption("layout.iconSize", value)
+                }
+            }
+
+            QuaySettingRow {
+                label: qsTr("Spacing")
+
+                QuayStepper {
+                    from: 0
+                    to: 32
+                    stepSize: 2
+                    suffix: "px"
+                    value: QuayStore.spacing
+                    onMoved: value => QuayStore.spacing = value
+                    onCommitted: value => QuayStore.setOption("layout.spacing", value)
+                }
+            }
+
+            Item { Layout.fillHeight: true }
+        }
+    }
+
+    Component {
+        id: appsPane
+
+        ColumnLayout {
+            spacing: 12
+
+            QuaySettingRow {
+                label: qsTr("Besides pinned apps")
+                hint: qsTr("What else the rail lists")
+
+                QuaySegmented {
+                    options: [
+                        { value: "pinned", label: qsTr("Nothing") },
+                        { value: "running", label: qsTr("Open windows") },
+                        { value: "recent", label: qsTr("Recently used") }
+                    ]
+                    currentValue: QuayStore.extras
+                    onPicked: value => QuayStore.setOption("content.extras", value)
+                }
+            }
+
+            QuaySettingRow {
+                label: qsTr("Recent entries")
+                enabled: QuayStore.extras === "recent"
+
+                QuayStepper {
+                    from: 1
+                    to: 10
+                    value: QuayStore.recentLimit
+                    onMoved: value => QuayStore.recentLimit = value
+                    onCommitted: value => QuayStore.setOption("content.recentLimit", value)
+                }
+            }
+
+            QuayPinBoard {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.minimumHeight: 240
+            }
+        }
+    }
+}

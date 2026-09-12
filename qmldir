@@ -9,4 +9,5 @@ QuayPinBoard 1.0 QuayPinBoard.qml
 QuayPinRow 1.0 QuayPinRow.qml
 QuaySegmented 1.0 QuaySegmented.qml
 QuaySettingRow 1.0 QuaySettingRow.qml
+QuaySettingsPanel 1.0 QuaySettingsPanel.qml
 QuayStepper 1.0 QuayStepper.qml
