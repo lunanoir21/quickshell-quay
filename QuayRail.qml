@@ -92,12 +92,14 @@ Item {
         rows: root.vertical ? root.pageCount : 1
         columns: root.vertical ? 1 : root.pageCount
 
+        // Just outside the panel, in the strip the surface keeps free on the
+        // desktop side: inside it the markers read as one more running mark.
         x: root.vertical
-            ? (root.edge === "right" ? 3 : root.width - pageMarkers.width - 3)
+            ? (root.edge === "right" ? -pageMarkers.width - 2 : root.width + 2)
             : (root.width - pageMarkers.width) / 2
         y: root.vertical
             ? (root.height - pageMarkers.height) / 2
-            : (root.edge === "bottom" ? 3 : root.height - pageMarkers.height - 3)
+            : (root.edge === "bottom" ? -pageMarkers.height - 2 : root.height + 2)
 
         Repeater {
             model: root.pageCount
