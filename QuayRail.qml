@@ -14,6 +14,12 @@ Item {
 
     signal settingsRequested()
 
+    // What the rail spends besides its tiles, so the surface can be sized to
+    // show every row it promises: the panel's inset from the screen edge, and
+    // along the rail the gear with its gap.
+    readonly property int panelInset: 4
+    readonly property int chromeLength: gearButton.height + 8 + root.panelInset * 2
+
     default property alias content: contentArea.data
 
     readonly property int pageCount: {
@@ -30,10 +36,10 @@ Item {
     Rectangle {
         id: panel
         anchors.fill: parent
-        anchors.leftMargin: root.edge === "right" ? 0 : 4
-        anchors.rightMargin: root.edge === "left" ? 0 : 4
-        anchors.topMargin: root.edge === "bottom" ? 0 : 4
-        anchors.bottomMargin: root.edge === "top" ? 0 : 4
+        anchors.leftMargin: root.edge === "right" ? 0 : root.panelInset
+        anchors.rightMargin: root.edge === "left" ? 0 : root.panelInset
+        anchors.topMargin: root.edge === "bottom" ? 0 : root.panelInset
+        anchors.bottomMargin: root.edge === "top" ? 0 : root.panelInset
 
         radius: QuayTheme.radiusLarge
         color: QuayTheme.alpha(QuayTheme.base, 0.88)

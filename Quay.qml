@@ -17,9 +17,9 @@ PanelWindow {
     readonly property int padding: 10
 
     readonly property int cell: QuayStore.iconSize + QuayStore.spacing
-    readonly property int railThickness: QuayStore.columns * root.cell + root.padding * 2
+    readonly property int railThickness: QuayStore.columns * root.cell + root.padding * 2 + rail.panelInset
     readonly property int railLength: Math.min(
-        QuayStore.rows * root.cell + root.padding * 2,
+        QuayStore.rows * root.cell + root.padding * 2 + rail.chromeLength,
         (root.vertical ? root.screen.height : root.screen.width) - 80)
 
     // The surface always occupies its full expanded size; `mask` is what makes
