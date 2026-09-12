@@ -24,7 +24,7 @@ Item {
 
     Rectangle {
         anchors.fill: parent
-        color: QuayTheme.alpha(QuayTheme.mantle, 0.92)
+        color: QuayTheme.mantle
         radius: QuayTheme.radiusMedium
 
         TapHandler { onTapped: root.dismissed() }

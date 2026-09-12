@@ -19,7 +19,7 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: QuayTheme.radiusMedium
-        color: QuayTheme.alpha(QuayTheme.mantle, 0.95)
+        color: QuayTheme.mantle
         border.width: 1
         border.color: QuayTheme.alpha(QuayTheme.text, 0.08)
 
