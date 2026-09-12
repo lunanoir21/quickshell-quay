@@ -3,3 +3,10 @@ singleton QuayModel 1.0 QuayModel.qml
 singleton QuayStore 1.0 QuayStore.qml
 singleton QuayTheme 1.0 QuayTheme.qml
 singleton QuayWindows 1.0 QuayWindows.qml
+
+QuayNavRow 1.0 QuayNavRow.qml
+QuayPinBoard 1.0 QuayPinBoard.qml
+QuayPinRow 1.0 QuayPinRow.qml
+QuaySegmented 1.0 QuaySegmented.qml
+QuaySettingRow 1.0 QuaySettingRow.qml
+QuayStepper 1.0 QuayStepper.qml
