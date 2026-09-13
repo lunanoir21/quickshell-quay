@@ -76,6 +76,7 @@ Singleton {
             "isRunning": QuayWindows.isRunning(id),
             "isActive": QuayWindows.isActive(id),
             "windowCount": QuayWindows.windowCount(id),
+            "isLaunching": root.isLaunching(id),
             "children": []
         };
     }
@@ -93,12 +94,86 @@ Singleton {
             "isRunning": running,
             "isActive": children.some(child => child.isActive),
             "windowCount": children.reduce((sum, child) => sum + child.windowCount, 0),
+            "isLaunching": children.some(child => child.isLaunching),
             "children": children
         };
     }
 
+    // --- launching --------------------------------------------------------
+
+    // A launch stays pending until the app shows one more window than it had,
+    // or gives up after a while. That drives the tile's pulse and swallows the
+    // second click of an impatient double click.
+    property var launching: ({})
+    readonly property int launchTimeoutMs: 8000
+
+    function launchKey(id) {
+        return String(id).toLowerCase();
+    }
+
+    function isLaunching(id) {
+        return root.launching[root.launchKey(id)] !== undefined;
+    }
+
+    function markLaunching(id) {
+        let next = Object.assign({}, root.launching);
+        next[root.launchKey(id)] = { "id": id, "windows": QuayWindows.windowCount(id), "at": Date.now() };
+        root.launching = next;
+    }
+
+    function settleLaunches() {
+        let keys = Object.keys(root.launching);
+        if (keys.length === 0) return;
+        let now = Date.now();
+        let next = {};
+        let changed = false;
+        for (let i = 0; i < keys.length; i++) {
+            let pending = root.launching[keys[i]];
+            if (QuayWindows.windowCount(pending.id) > pending.windows || now - pending.at > root.launchTimeoutMs)
+                changed = true;
+            else
+                next[keys[i]] = pending;
+        }
+        if (changed) root.launching = next;
+    }
+
+    Connections {
+        target: QuayWindows
+        function onGroupsChanged() {
+            root.settleLaunches();
+        }
+    }
+
+    Timer {
+        interval: 1000
+        repeat: true
+        running: Object.keys(root.launching).length > 0
+        onTriggered: root.settleLaunches()
+    }
+
     function activate(id) {
-        if (!QuayWindows.focus(id)) QuayApps.launch(id);
+        if (QuayWindows.focus(id)) return;
+        if (root.isLaunching(id)) return;
+        root.launchNew(id);
+    }
+
+    // Always a new instance, even when the app already has windows.
+    function launchNew(id) {
+        if (!QuayApps.entryFor(id)) return;
+        root.markLaunching(id);
+        QuayApps.launch(id);
+    }
+
+    // Shortcuts and file drops only pulse for an app that isn't open yet: an
+    // open one may well answer them without a new window (a new tab, say).
+    function runAction(id, actionId) {
+        if (!QuayWindows.isRunning(id)) root.markLaunching(id);
+        QuayApps.launchAction(id, actionId);
+    }
+
+    function openFiles(id, urls) {
+        let running = QuayWindows.isRunning(id);
+        if (QuayApps.openWith(id, urls) && !running) root.markLaunching(id);
     }
 
     // --- layout mutations -------------------------------------------------

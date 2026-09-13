@@ -30,6 +30,10 @@ Item {
     // surface and so looks to this grid like the pointer has left.
     property bool previewHeld: false
 
+    // A file from another app is over one of the tiles; the rail must not
+    // hide under it, and a drag reports no hover to tell it so.
+    property bool fileDragActive: false
+
     property int dragIndex: -1
     property int dropIndex: -1
     property bool dropAsFolder: false
@@ -132,6 +136,7 @@ Item {
         model: QuayModel.entries
 
         delegate: QuayIconDelegate {
+            id: tileDelegate
             required property var modelData
             required property int index
 
@@ -146,6 +151,9 @@ Item {
             onActivated: id => QuayModel.activate(id)
             onFolderToggled: id => root.openFolder(id)
             onPinToggled: id => QuayModel.togglePin(id)
+            onNewWindowRequested: id => QuayModel.launchNew(id)
+            onFilesDropped: (id, urls) => QuayModel.openFiles(id, urls)
+            onFileHoverChanged: root.fileDragActive = tileDelegate.fileHover
 
             onDragStarted: index => {
                 root.dragIndex = index;

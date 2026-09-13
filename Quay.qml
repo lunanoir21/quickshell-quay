@@ -180,6 +180,15 @@ PanelWindow {
                 else revealTimer.stop();
             }
         }
+
+        // A drag reports no hover, so a file carried to the edge reveals the
+        // rail through here instead.
+        DropArea {
+            anchors.fill: parent
+            enabled: QuayStore.triggerMode === "hover" && !root.suppressed
+            onEntered: revealTimer.restart()
+            onExited: revealTimer.stop()
+        }
     }
 
     Timer {
@@ -191,7 +200,11 @@ PanelWindow {
     Timer {
         id: hideTimer
         interval: QuayStore.hoverHideDelayMs
-        onTriggered: if (QuayStore.triggerMode === "hover") root.revealed = false
+        onTriggered: {
+            if (QuayStore.triggerMode !== "hover") return;
+            if (grid.fileDragActive || railDrop.containsDrag) return;
+            root.revealed = false;
+        }
     }
 
     QuayRail {
@@ -237,6 +250,14 @@ PanelWindow {
                     hideTimer.restart();
                 }
             }
+        }
+
+        DropArea {
+            id: railDrop
+            anchors.fill: parent
+            enabled: QuayStore.triggerMode === "hover"
+            onEntered: hideTimer.stop()
+            onExited: hideTimer.restart()
         }
 
         QuayScrollView {

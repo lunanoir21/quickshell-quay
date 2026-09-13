@@ -13,10 +13,14 @@ Item {
     property bool dropTarget: false
     property bool dropMerges: false
     property bool folderOpen: false
+    // A file from another app is being dragged over this tile.
+    property bool fileHover: false
 
     signal activated(string id)
     signal folderToggled(string id)
     signal pinToggled(string id)
+    signal newWindowRequested(string id)
+    signal filesDropped(string id, var urls)
     signal dragStarted(int index)
     signal dragMoved(int index, point scenePoint)
     signal dragFinished(int index)
@@ -31,10 +35,25 @@ Item {
     readonly property bool isFolder: root.entry.type === "folder"
     readonly property int iconSize: QuayStore.iconSize
     readonly property string indicatorEdge: QuayStore.triggerEdge
+    readonly property bool launching: root.entry.isLaunching === true
+
+    function sceneCentre() {
+        return root.mapToItem(null, root.width / 2, root.height / 2);
+    }
 
     Accessible.role: Accessible.Button
     Accessible.name: root.entry.name
-    Accessible.description: root.entry.isRunning ? qsTr("running") : qsTr("not running")
+    Accessible.description: root.launching ? qsTr("starting")
+        : (root.entry.isRunning ? qsTr("running") : qsTr("not running"))
+
+    // Breathes while a launch is pending, until the app's window shows up.
+    property real pulse: 0
+    SequentialAnimation on pulse {
+        running: root.launching
+        loops: Animation.Infinite
+        NumberAnimation { to: 1; duration: 480; easing.type: Easing.InOutSine }
+        NumberAnimation { to: 0; duration: 480; easing.type: Easing.InOutSine }
+    }
 
     Item {
         id: tile
@@ -42,7 +61,8 @@ Item {
         height: root.iconSize
         anchors.centerIn: parent
 
-        scale: root.dragging ? 1.1 : (root.dropMerges ? 0.9 : (hoverHandler.hovered ? 1.06 : 1.0))
+        opacity: root.launching ? 1 - 0.55 * root.pulse : 1.0
+        scale: root.dragging ? 1.1 : (root.dropMerges ? 0.9 : (hoverHandler.hovered || root.fileHover ? 1.06 : 1.0))
         transform: Translate {
             x: dragHandler.active ? dragHandler.activeTranslation.x : 0
             y: dragHandler.active ? dragHandler.activeTranslation.y : 0
@@ -53,12 +73,12 @@ Item {
         Rectangle {
             anchors.fill: parent
             radius: QuayTheme.radiusMedium
-            color: root.dropMerges
+            color: root.dropMerges || root.fileHover
                 ? QuayTheme.alpha(QuayTheme.accent, 0.22)
                 : (hoverHandler.hovered || root.folderOpen
                     ? QuayTheme.alpha(QuayTheme.surface0, 0.9)
                     : QuayTheme.alpha(QuayTheme.surface0, 0.0))
-            border.width: root.dropTarget ? 1 : 0
+            border.width: root.dropTarget || root.fileHover ? 1 : 0
             border.color: QuayTheme.alpha(QuayTheme.accent, 0.7)
         }
 
@@ -177,7 +197,7 @@ Item {
     Timer {
         id: previewTimer
         interval: Math.max(1, QuayStore.previewDelayMs)
-        onTriggered: root.previewRequested(root.entry.id, root.mapToItem(null, root.width / 2, root.height / 2))
+        onTriggered: root.previewRequested(root.entry.id, root.sceneCentre())
     }
 
     DragHandler {
@@ -201,7 +221,30 @@ Item {
     }
 
     TapHandler {
+        acceptedButtons: Qt.MiddleButton
+        onTapped: if (!root.isFolder) root.newWindowRequested(root.entry.id)
+    }
+
+    TapHandler {
         acceptedButtons: Qt.RightButton
         onTapped: if (!root.isFolder) root.pinToggled(root.entry.id)
+    }
+
+    // Files dropped on an app open with it.
+    DropArea {
+        anchors.fill: parent
+        enabled: !root.isFolder
+
+        onEntered: drag => {
+            drag.accepted = drag.hasUrls;
+            root.fileHover = drag.hasUrls;
+        }
+        onExited: root.fileHover = false
+        onDropped: drop => {
+            root.fileHover = false;
+            if (!drop.hasUrls) return;
+            drop.accept(Qt.CopyAction);
+            root.filesDropped(root.entry.id, drop.urls);
+        }
     }
 }
