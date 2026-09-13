@@ -106,6 +106,36 @@ Item {
                         }
                     }
 
+                    Rectangle {
+                        anchors.top: parent.top
+                        anchors.right: parent.right
+                        anchors.margins: 4
+                        width: 16
+                        height: 16
+                        radius: 8
+                        visible: cardHover.hovered
+                        color: closeHover.hovered ? QuayTheme.text : QuayTheme.alpha(QuayTheme.mantle, 0.9)
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "󰅖"
+                            color: closeHover.hovered ? QuayTheme.base : QuayTheme.text
+                            font.family: QuayTheme.mono
+                            font.pixelSize: 9
+                        }
+
+                        HoverHandler { id: closeHover }
+                        // WithinBounds grabs the press, so the card's own tap
+                        // (focus this window) doesn't also fire.
+                        TapHandler {
+                            gesturePolicy: TapHandler.WithinBounds
+                            onTapped: card.modelData.close()
+                        }
+
+                        Accessible.role: Accessible.Button
+                        Accessible.name: qsTr("Close window")
+                    }
+
                     HoverHandler { id: cardHover }
                     TapHandler { onTapped: root.selected(card.modelData) }
 

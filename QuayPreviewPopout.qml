@@ -204,6 +204,38 @@ PanelWindow {
                             elide: Text.ElideRight
                         }
 
+                        Rectangle {
+                            anchors.top: parent.top
+                            anchors.right: parent.right
+                            anchors.margins: 8
+                            width: 20
+                            height: 20
+                            radius: 10
+                            visible: windowHover.hovered
+                            color: closeHover.hovered ? QuayTheme.text : QuayTheme.alpha(QuayTheme.mantle, 0.9)
+                            border.width: 1
+                            border.color: QuayTheme.alpha(QuayTheme.text, 0.12)
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "󰅖"
+                                color: closeHover.hovered ? QuayTheme.base : QuayTheme.text
+                                font.family: QuayTheme.mono
+                                font.pixelSize: 10
+                            }
+
+                            HoverHandler { id: closeHover }
+                            // WithinBounds grabs the press, so the card's own
+                            // tap (focus this window) doesn't also fire.
+                            TapHandler {
+                                gesturePolicy: TapHandler.WithinBounds
+                                onTapped: windowCard.modelData.close()
+                            }
+
+                            Accessible.role: Accessible.Button
+                            Accessible.name: qsTr("Close window")
+                        }
+
                         HoverHandler { id: windowHover }
                         TapHandler {
                             id: windowTap

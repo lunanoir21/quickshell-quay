@@ -48,9 +48,10 @@ Item {
     Connections {
         target: QuayModel
         function onEntriesChanged() {
-            // A window closing is exactly the kind of entries change that
-            // would otherwise leave the preview showing a dead thumbnail.
-            root.hidePreview();
+            // The preview's thumbnails follow the app's windows on their own,
+            // so closing one from the preview keeps it open; it goes only
+            // once the app has no window left to show.
+            if (root.previewId !== "" && QuayWindows.windowCount(root.previewId) === 0) root.hidePreview();
             if (root.dragIndex === -1) return;
             root.dragIndex = -1;
             root.dropIndex = -1;
