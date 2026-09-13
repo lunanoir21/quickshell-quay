@@ -16,6 +16,16 @@ Item {
     readonly property var group: QuayWindows.groupFor(root.entryId)
     readonly property var windowList: root.group ? root.group.windows : []
 
+    opacity: 0
+    scale: 0.96
+    Component.onCompleted: enterAnimation.start()
+
+    ParallelAnimation {
+        id: enterAnimation
+        NumberAnimation { target: root; property: "opacity"; to: 1; duration: 180; easing.type: Easing.OutCubic }
+        NumberAnimation { target: root; property: "scale"; to: 1; duration: 220; easing.type: Easing.OutCubic }
+    }
+
     Rectangle {
         anchors.fill: parent
         radius: QuayTheme.radiusMedium

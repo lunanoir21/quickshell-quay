@@ -21,6 +21,15 @@ Item {
         return Math.max(0, Math.min(1, offset / root.maxOffset));
     }
 
+    // The app whose windows are being previewed, and where its tile sits.
+    // Placement is decided by whoever reads these: the inside overlay below,
+    // or the popout Quay.qml opens beside the rail.
+    property string previewId: ""
+    property point previewAnchor: Qt.point(0, 0)
+    // True while the pointer is on the beside popout, which is a separate
+    // surface and so looks to this grid like the pointer has left.
+    property bool previewHeld: false
+
     property int dragIndex: -1
     property int dropIndex: -1
     property bool dropAsFolder: false
@@ -59,19 +68,35 @@ Item {
         folderLoader.folderId = folderLoader.folderId === id ? "" : id;
     }
 
-    // Routed through root functions rather than referencing previewLoader's id
+    Connections {
+        target: QuayStore
+        function onPreviewModeChanged() {
+            root.hidePreview();
+        }
+    }
+
+    // Routed through root functions rather than referencing a sibling id
     // directly: a Bound delegate (GridView.delegate below) cannot reliably
     // resolve a sibling id declared elsewhere in this file from inside an
     // imperative signal handler, only from a declarative property binding.
-    function showPreview(id) {
-        previewLoader.activeId = id;
+    function showPreview(id, anchor) {
+        root.previewAnchor = anchor;
+        root.previewId = id;
     }
 
     function hidePreview() {
-        previewLoader.activeId = "";
+        root.previewId = "";
+    }
+
+    function holdPreview(held) {
+        root.previewHeld = held;
+        if (held) previewCloseDelay.stop();
+        else if (!viewHover.hovered) previewCloseDelay.restart();
     }
 
     function scrollBy(rows) {
+        // The anchor a preview was opened at scrolls away with its tile.
+        root.hidePreview();
         let current = root.vertical ? view.contentY : view.contentX;
         let target = Math.max(0, Math.min(root.maxOffset, current + rows * root.cell));
         if (root.vertical) offsetAnimation.animate(view, "contentY", target);
@@ -128,7 +153,7 @@ Item {
             }
             onDragMoved: (index, scenePoint) => root.updateDrop(index, scenePoint)
             onDragFinished: index => root.commitDrop(index)
-            onPreviewRequested: id => root.showPreview(id)
+            onPreviewRequested: (id, anchor) => root.showPreview(id, anchor)
         }
     }
 
@@ -197,7 +222,7 @@ Item {
         id: viewHover
         onHoveredChanged: {
             if (viewHover.hovered) previewCloseDelay.stop();
-            else previewCloseDelay.restart();
+            else if (!root.previewHeld) previewCloseDelay.restart();
         }
     }
 
@@ -235,19 +260,16 @@ Item {
     }
 
     Loader {
-        id: previewLoader
-        property string activeId: ""
-
-        active: previewLoader.activeId !== ""
+        active: root.previewId !== "" && QuayStore.previewMode === "inside"
         anchors.fill: parent
         asynchronous: true
 
         sourceComponent: QuayWindowPreview {
-            entryId: previewLoader.activeId
-            onDismissed: previewLoader.activeId = ""
+            entryId: root.previewId
+            onDismissed: root.hidePreview()
             onSelected: toplevel => {
                 toplevel.activate();
-                previewLoader.activeId = "";
+                root.hidePreview();
             }
         }
     }

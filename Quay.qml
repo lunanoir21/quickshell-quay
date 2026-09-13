@@ -89,6 +89,42 @@ PanelWindow {
         settingsLoader.active = !settingsLoader.active;
     }
 
+    readonly property bool previewBeside: QuayStore.previewMode === "beside"
+        && root.revealed && grid.previewId !== ""
+
+    // Kept loaded a moment after closing so the popout can fade out.
+    onPreviewBesideChanged: if (!root.previewBeside) previewLinger.restart()
+
+    Timer {
+        id: previewLinger
+        interval: 240
+    }
+
+    function holdPreview(held) {
+        grid.holdPreview(held);
+        if (QuayStore.triggerMode !== "hover") return;
+        if (held) hideTimer.stop();
+        else if (!railHover.hovered) hideTimer.restart();
+    }
+
+    Loader {
+        active: root.previewBeside || previewLinger.running
+
+        sourceComponent: QuayPreviewPopout {
+            quayScreen: root.screen
+            railThickness: root.railThickness
+            railLength: root.railLength
+            entryId: grid.previewId
+            anchorPoint: grid.previewAnchor
+            open: root.previewBeside
+            onHoldChanged: held => root.holdPreview(held)
+            onSelected: toplevel => {
+                toplevel.activate();
+                grid.hidePreview();
+            }
+        }
+    }
+
     Loader {
         id: settingsLoader
         active: false

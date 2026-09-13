@@ -20,7 +20,9 @@ Item {
     signal dragStarted(int index)
     signal dragMoved(int index, point scenePoint)
     signal dragFinished(int index)
-    signal previewRequested(string id)
+    // `anchor` is the tile centre in scene coordinates, so a preview placed
+    // beside the rail can line up with the tile it belongs to.
+    signal previewRequested(string id, point anchor)
 
     width: root.cellSize
     height: root.cellSize
@@ -164,7 +166,8 @@ Item {
     HoverHandler {
         id: hoverHandler
         onHoveredChanged: {
-            if (hoverHandler.hovered && !root.isFolder && !root.dragging && root.entry.windowCount > 1)
+            if (hoverHandler.hovered && QuayStore.previewMode !== "off"
+                    && !root.isFolder && !root.dragging && root.entry.windowCount > 1)
                 previewTimer.restart();
             else
                 previewTimer.stop();
@@ -173,8 +176,8 @@ Item {
 
     Timer {
         id: previewTimer
-        interval: 400
-        onTriggered: root.previewRequested(root.entry.id)
+        interval: Math.max(1, QuayStore.previewDelayMs)
+        onTriggered: root.previewRequested(root.entry.id, root.mapToItem(null, root.width / 2, root.height / 2))
     }
 
     DragHandler {
