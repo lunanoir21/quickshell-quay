@@ -59,6 +59,57 @@ Singleton {
         Quickshell.execDetached(["sh", "-c", entry.exec]);
     }
 
+    // One of the entry's own [Desktop Action] shortcuts, e.g. a private window.
+    function launchAction(id, actionId) {
+        let entry = root.entryFor(id);
+        if (!entry || !entry.actions) return;
+        let action = entry.actions.find(candidate => candidate.id === actionId);
+        if (action) Quickshell.execDetached(["sh", "-c", action.exec]);
+    }
+
+    function shellQuote(value) {
+        return "'" + String(value).replace(/'/g, "'\\''") + "'";
+    }
+
+    // Opens dropped files with the entry by expanding its Exec= field codes.
+    // An entry that takes a single %f or %u is started once per file, as the
+    // desktop entry spec asks; one with no file field code gets the paths
+    // appended, which is what a drop is expected to do.
+    function openWith(id, urls) {
+        let entry = root.entryFor(id);
+        if (!entry || !urls || urls.length === 0) return false;
+
+        let raw = entry.execRaw || entry.exec;
+        let links = [];
+        for (let i = 0; i < urls.length; i++) links.push(String(urls[i]));
+        let paths = links.map(link => link.startsWith("file://") ? decodeURIComponent(link.slice(7)) : link);
+
+        let expand = (files, uris) => {
+            let used = false;
+            let command = raw.replace(/%[fFuUdDnNickvm%]/g, code => {
+                if (code === "%%") return "%";
+                if (code === "%f" || code === "%F") {
+                    used = true;
+                    return files.map(file => root.shellQuote(file)).join(" ");
+                }
+                if (code === "%u" || code === "%U") {
+                    used = true;
+                    return uris.map(uri => root.shellQuote(uri)).join(" ");
+                }
+                return "";
+            });
+            return used ? command : command + " " + files.map(file => root.shellQuote(file)).join(" ");
+        };
+
+        if (/%[fu]/.test(raw) && paths.length > 1) {
+            for (let i = 0; i < paths.length; i++)
+                Quickshell.execDetached(["sh", "-c", expand([paths[i]], [links[i]])]);
+        } else {
+            Quickshell.execDetached(["sh", "-c", expand(paths, links)]);
+        }
+        return true;
+    }
+
     function refresh() {
         fetcher.running = true;
     }
