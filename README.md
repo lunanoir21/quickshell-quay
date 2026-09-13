@@ -34,6 +34,34 @@ It is a self-contained Quickshell module: its own settings file, its own
 settings panel, its own app index. Vendoring it into a shell takes one import
 and one line.
 
+<!-- changelog:readme:start -->
+## What's new in 1.1.0
+
+_Released 2026-09-13 · [Full changelog](CHANGELOG.md)_
+
+**Added**
+
+- **Tile menu.** Right click a tile for the app's own shortcuts (a private window, a profile manager), a new window, pinning, moving it into a folder, and closing its windows. Folders get Open and Ungroup. It works from the keyboard too.
+- **Window previews beside the rail.** Previews open next to the rail with larger live thumbnails, inside the rail as before, or not at all, after a delay you choose.
+- **Close windows from their previews.** Hovering a thumbnail shows a close button.
+- **File drops.** Drop a file on an app to open it with that app. In hover mode, carrying a file to the edge brings the rail out.
+- **Middle click** opens a new window of the app.
+- **Launch feedback.** A tile pulses until the app it started shows a window, and a second click in the meantime doesn't start it twice.
+- **Out of the way in fullscreen.** While a focused window is fullscreen, the rail and its hot edge stand down (`trigger.hideOnFullscreen`).
+- **System theme.** `"theme": "auto"` follows the system's light/dark preference through xdg-desktop-portal, live.
+- **Windows section in settings**, with a small diagram of where previews land.
+- **This changelog**, with the latest release in the READMEs and every release on the website.
+
+**Changed**
+
+- Right click opens the tile menu instead of pinning straight away; pinning lives in the menu.
+- A preview stays open while its app still has windows, so closing one keeps the others in view.
+- The settings panel animates: it scales in and out, one highlight slides between sections, panes slide in from the direction of travel, and choice controls move a single thumb.
+- The settings section list keeps a fixed width, so switching sections no longer shifts the layout.
+- New folders are named in English ("New folder") rather than Turkish.
+
+<!-- changelog:readme:end -->
+
 ## Features
 
 - **Vertical wheel navigation.** One notch, one row, with snap — whichever edge

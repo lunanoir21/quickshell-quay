@@ -1,0 +1,34 @@
+name: Changelog
+
+# The READMEs and the website carry blocks generated from CHANGELOG.md and
+# CHANGELOG.tr.md; this fails when someone edits one side without the other.
+on:
+  push:
+    paths:
+      - "CHANGELOG.md"
+      - "CHANGELOG.tr.md"
+      - "README.md"
+      - "README.tr.md"
+      - "docs/index.html"
+      - "scripts/changelog.py"
+      - ".github/workflows/changelog.yml"
+  pull_request:
+    paths:
+      - "CHANGELOG.md"
+      - "CHANGELOG.tr.md"
+      - "README.md"
+      - "README.tr.md"
+      - "docs/index.html"
+      - "scripts/changelog.py"
+      - ".github/workflows/changelog.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  in-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generated changelog blocks are up to date
+        run: python3 scripts/changelog.py --check

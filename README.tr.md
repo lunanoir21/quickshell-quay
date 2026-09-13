@@ -33,6 +33,34 @@ Kendi kendine yeten bir Quickshell modülüdür: kendi ayar dosyası, kendi ayar
 paneli, kendi uygulama dizini vardır. Bir shell'e eklemek bir import ve bir
 satır sürer.
 
+<!-- changelog:readme:start -->
+## 1.1.0 sürümündeki yenilikler
+
+_2026-09-13 tarihinde yayınlandı · [Tüm değişiklik günlüğü](CHANGELOG.tr.md)_
+
+**Eklenenler**
+
+- **Kutucuk menüsü.** Bir kutucuğa sağ tıklayınca uygulamanın kendi kısayolları (gizli pencere, profil yöneticisi gibi), yeni pencere, sabitleme, klasöre taşıma ve pencerelerini kapatma çıkar. Klasörlerde Aç ve Grubu çöz bulunur. Klavyeyle de kullanılır.
+- **Rayın yanında pencere önizlemesi.** Önizlemeler rayın yanında daha büyük canlı küçük resimlerle, eskisi gibi rayın içinde ya da hiç açılmayabilir; açılmadan önceki bekleme süresi ayarlanır.
+- **Önizlemeden pencere kapatma.** Küçük resmin üzerine gelince kapatma düğmesi çıkar.
+- **Dosya bırakma.** Bir dosyayı uygulamanın üstüne bırakınca o uygulamayla açılır. Hover modunda dosyayı kenara getirmek rayı çıkarır.
+- **Orta tık** uygulamanın yeni bir penceresini açar.
+- **Açılış geri bildirimi.** Kutucuk, başlattığı uygulamanın penceresi gelene kadar nabız atar; bu arada yapılan ikinci tıklama onu iki kez açmaz.
+- **Tam ekranda kenara çekilir.** Odaktaki pencere tam ekranken ray ve sıcak kenarı devre dışı kalır (`trigger.hideOnFullscreen`).
+- **Sistem teması.** `"theme": "auto"`, sistemin açık/koyu tercihini xdg-desktop-portal üzerinden anında izler.
+- **Ayarlarda Pencereler bölümü**, önizlemenin nereye açılacağını gösteren küçük bir şemayla.
+- **Bu değişiklik günlüğü**; son sürüm README'lerde, tüm sürümler web sitesinde.
+
+**Değişenler**
+
+- Sağ tık artık doğrudan sabitlemek yerine kutucuk menüsünü açar; sabitleme menünün içindedir.
+- Önizleme, uygulamanın hâlâ penceresi varken açık kalır; birini kapatınca diğerleri görünmeye devam eder.
+- Ayar paneli hareketlendi: açılıp kapanırken ölçeklenir, tek bir vurgu bölümler arasında kayar, içerik gidilen yönden kayarak gelir, seçim düğmelerinde tek bir işaret kayar.
+- Ayar bölümleri listesi sabit genişlikte kalır; bölüm değiştirmek düzeni artık kaydırmaz.
+- Yeni klasörler Türkçe yerine İngilizce adlandırılır ("New folder").
+
+<!-- changelog:readme:end -->
+
 ## Özellikler
 
 - **Dikey tekerlekle gezinme.** Bir adım, bir satır, yerine oturarak — ray hangi
