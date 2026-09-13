@@ -23,6 +23,7 @@ PanelWindow {
         { key: "appearance", glyph: "󰸌", label: qsTr("Appearance"), hint: qsTr("Theme") },
         { key: "trigger", glyph: "󰊫", label: qsTr("Trigger"), hint: qsTr("How it appears") },
         { key: "grid", glyph: "󰕰", label: qsTr("Grid"), hint: qsTr("Size and layout") },
+        { key: "windows", glyph: "󰖯", label: qsTr("Windows"), hint: qsTr("Live previews") },
         { key: "apps", glyph: "󰀻", label: qsTr("Applications"), hint: qsTr("Pins and folders") }
     ]
 
@@ -250,6 +251,7 @@ PanelWindow {
                         if (root.section === "appearance") return appearancePane;
                         if (root.section === "trigger") return triggerPane;
                         if (root.section === "grid") return gridPane;
+                        if (root.section === "windows") return windowsPane;
                         return appsPane;
                     }
                 }
@@ -588,6 +590,163 @@ PanelWindow {
                     value: QuayStore.spacing
                     onMoved: value => QuayStore.spacing = value
                     onCommitted: value => QuayStore.setOption("layout.spacing", value)
+                }
+            }
+
+            Item { Layout.fillHeight: true }
+        }
+    }
+
+    Component {
+        id: windowsPane
+
+        ColumnLayout {
+            spacing: 12
+
+            QuaySettingRow {
+                label: qsTr("Window previews")
+                hint: qsTr("For apps with more than one window open")
+
+                QuaySegmented {
+                    options: [
+                        { value: "off", label: qsTr("Off") },
+                        { value: "inside", label: qsTr("In the rail") },
+                        { value: "beside", label: qsTr("Beside the rail") }
+                    ]
+                    currentValue: QuayStore.previewMode
+                    onPicked: value => QuayStore.setOption("previews.mode", value)
+                }
+            }
+
+            QuaySettingRow {
+                label: qsTr("Preview delay")
+                hint: qsTr("Pointer dwell on a tile before previews open")
+                enabled: QuayStore.previewMode !== "off"
+
+                QuayStepper {
+                    from: 0
+                    to: 1500
+                    stepSize: 50
+                    suffix: "ms"
+                    value: QuayStore.previewDelayMs
+                    onMoved: value => QuayStore.previewDelayMs = value
+                    onCommitted: value => QuayStore.setOption("previews.delayMs", value)
+                }
+            }
+
+            // A small picture of the choice: where the preview lands relative
+            // to the rail, animated as the setting changes.
+            Rectangle {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 168
+                radius: QuayTheme.radiusMedium
+                color: QuayTheme.alpha(QuayTheme.surface0, 0.35)
+                border.width: 1
+                border.color: QuayTheme.alpha(QuayTheme.text, 0.06)
+
+                Item {
+                    id: stage
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    y: 14
+                    width: 280
+                    height: 116
+
+                    readonly property string mode: QuayStore.previewMode
+
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: QuayTheme.radiusSmall
+                        color: QuayTheme.alpha(QuayTheme.surface1, 0.22)
+                    }
+
+                    Rectangle {
+                        id: miniRail
+                        width: 26
+                        height: 100
+                        x: stage.width - miniRail.width - 6
+                        y: (stage.height - miniRail.height) / 2
+                        radius: 8
+                        color: QuayTheme.mantle
+                        border.width: 1
+                        border.color: QuayTheme.alpha(QuayTheme.text, 0.10)
+
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 6
+
+                            Repeater {
+                                model: 4
+
+                                Rectangle {
+                                    required property int index
+                                    width: 14
+                                    height: 14
+                                    radius: 4
+                                    color: index === 1
+                                        ? QuayTheme.alpha(QuayTheme.accent, 0.45)
+                                        : QuayTheme.alpha(QuayTheme.surface1, 0.8)
+                                }
+                            }
+                        }
+                    }
+
+                    Rectangle {
+                        id: miniPreview
+
+                        readonly property bool beside: stage.mode === "beside"
+                        // Second tile's centre: column top + one tile and gap + half a tile.
+                        readonly property real tileCentre: miniRail.y + (miniRail.height - 74) / 2 + 27
+
+                        width: miniPreview.beside ? 104 : miniRail.width - 4
+                        height: miniPreview.beside ? 78 : miniRail.height - 4
+                        x: miniPreview.beside ? miniRail.x - miniPreview.width - 8 : miniRail.x + 2
+                        y: miniPreview.beside ? miniPreview.tileCentre - miniPreview.height / 2 : miniRail.y + 2
+                        opacity: stage.mode === "off" ? 0 : 1
+                        radius: miniPreview.beside ? 7 : 6
+                        color: QuayTheme.mantle
+                        border.width: 1
+                        border.color: QuayTheme.alpha(QuayTheme.text, 0.20)
+
+                        Behavior on x { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
+                        Behavior on y { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
+                        Behavior on width { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
+                        Behavior on height { NumberAnimation { duration: 280; easing.type: Easing.OutCubic } }
+                        Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+
+                        Column {
+                            anchors.fill: parent
+                            anchors.margins: 4
+                            spacing: 3
+
+                            Repeater {
+                                model: 2
+
+                                Rectangle {
+                                    width: parent.width
+                                    height: (parent.height - 3) / 2
+                                    radius: 3
+                                    color: QuayTheme.alpha(QuayTheme.surface1, 0.9)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Text {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    anchors.margins: 12
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                    text: {
+                        if (QuayStore.previewMode === "inside") return qsTr("Opens over the rail, in place of the grid");
+                        if (QuayStore.previewMode === "beside") return qsTr("Opens next to the rail, with larger live thumbnails");
+                        return qsTr("No previews — clicking an app still cycles its windows");
+                    }
+                    color: QuayTheme.overlay0
+                    font.family: QuayTheme.mono
+                    font.pixelSize: 9
                 }
             }
 
