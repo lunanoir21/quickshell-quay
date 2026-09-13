@@ -34,6 +34,9 @@ Singleton {
     property string extras: "running"          // pinned | running | recent
     property int recentLimit: 4
 
+    property string previewMode: "beside"      // off | inside | beside
+    property int previewDelayMs: 400
+
     property var items: []
     property var recent: []
 
@@ -64,6 +67,7 @@ Singleton {
     readonly property var _triggerModes: ["always", "hover", "shortcut"]
     readonly property var _edges: ["left", "right", "top", "bottom"]
     readonly property var _extrasModes: ["pinned", "running", "recent"]
+    readonly property var _previewModes: ["off", "inside", "beside"]
 
     // A value outside these enums would otherwise leave the rail permanently
     // unreachable (an unrecognised trigger mode satisfies none of the reveal
@@ -88,6 +92,10 @@ Singleton {
         let content = parsed.content || {};
         if (root._extrasModes.indexOf(content.extras) !== -1) root.extras = content.extras;
         if (typeof content.recentLimit === "number") root.recentLimit = Math.max(0, content.recentLimit);
+
+        let previews = parsed.previews || {};
+        if (root._previewModes.indexOf(previews.mode) !== -1) root.previewMode = previews.mode;
+        if (typeof previews.delayMs === "number") root.previewDelayMs = Math.max(0, Math.min(2000, previews.delayMs));
 
         let trigger = parsed.trigger || {};
         if (root._triggerModes.indexOf(trigger.mode) !== -1) root.triggerMode = trigger.mode;

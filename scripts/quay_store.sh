@@ -32,13 +32,17 @@ defaults() {
     "extras": "running",
     "recentLimit": 4
   },
+  "previews": {
+    "mode": "beside",
+    "delayMs": 400
+  },
   "items": [],
   "recent": []
 }
 JSON
 }
 
-option_paths='["appearance.theme","trigger.mode","trigger.edge","trigger.hoverRevealDelayMs","trigger.hoverHideDelayMs","layout.columns","layout.rows","layout.iconSize","layout.spacing","content.extras","content.recentLimit"]'
+option_paths='["appearance.theme","trigger.mode","trigger.edge","trigger.hoverRevealDelayMs","trigger.hoverHideDelayMs","layout.columns","layout.rows","layout.iconSize","layout.spacing","content.extras","content.recentLimit","previews.mode","previews.delayMs"]'
 
 _lock_held=0
 with_lock() {
