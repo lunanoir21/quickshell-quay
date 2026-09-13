@@ -99,13 +99,18 @@ _2026-09-13 tarihinde yayınlandı · [Tüm değişiklik günlüğü](CHANGELOG.
 ## Yakından
 
 <p align="center">
-  <img src="docs/screenshots/preview.png" height="360" alt="Rayın içinde açık duran terminal pencere önizlemeleri">
+  <img src="docs/screenshots/preview.png" height="360" alt="Rayın yanında açılan, iki Metin Düzenleyici penceresinin canlı önizlemeleri">
   &nbsp;
-  <img src="docs/screenshots/settings.png" height="360" alt="Quay'in ayar paneli, Görünüm bölümünde">
+  <img src="docs/screenshots/menu.png" height="360" alt="Firefox kutucuğunun menüsü: kendi kısayolları, sabitleme, klasörler ve kapatma">
 </p>
 
-İki terminal penceresi olan bir uygulamanın pencere önizlemeleri ve Quay'in
-kendi ayar paneli. Hyprland'de 1920×1080 çözünürlükte çekildi.
+<p align="center">
+  <img src="docs/screenshots/settings.png" width="560" alt="Quay'in ayar paneli, önizlemenin nereye açılacağının seçildiği Pencereler bölümünde">
+</p>
+
+İki penceresi olan bir uygulamanın rayın yanında açılan önizlemeleri, kutucuk
+menüsü ve Quay'in kendi ayar panelindeki Pencereler bölümü. Hyprland'de
+1920×1080 çözünürlükte çekildi.
 
 ## Gereksinimler
 

@@ -397,7 +397,7 @@ h3 { margin: 56px 0 18px; font: 700 14px/1.4 var(--mono); color: var(--ink); }
 
 .shots {
   display: grid;
-  grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   max-width: 760px;
 }
@@ -877,19 +877,23 @@ h3 { margin: 56px 0 18px; font: 700 14px/1.4 var(--mono); color: var(--ink); }
 
   <section class="block" id="desktop" aria-labelledby="desktop-title">
     <h2 id="desktop-title">On a desktop</h2>
-    <p class="section-lede">Captured on Hyprland at 1920×1080: the rail in both themes, window previews for a terminal with two windows, and Quay's own settings panel.</p>
+    <p class="section-lede">Captured on Hyprland at 1920×1080: the rail in both themes, window previews beside the rail for an app with two windows, the tile menu, and the Windows section of Quay's own settings panel.</p>
     <div class="shots">
       <figure class="wide">
-        <img src="screenshots/rail.png" width="1040" height="660" loading="lazy" alt="The rail docked to the right edge of the screen, in the black theme and in the white theme">
+        <img src="screenshots/rail.png" width="1024" height="660" loading="lazy" alt="The rail docked to the right edge of the screen, in the black theme and in the white theme">
         <figcaption>Black and white themes</figcaption>
       </figure>
       <figure>
-        <img src="screenshots/preview.png" width="260" height="540" loading="lazy" alt="Window previews for the terminal, open inside the rail">
-        <figcaption>Window previews</figcaption>
+        <img src="screenshots/preview.png" width="400" height="540" loading="lazy" alt="Live previews of two Text Editor windows, open beside the rail">
+        <figcaption>Window previews beside the rail</figcaption>
       </figure>
       <figure>
-        <img src="screenshots/settings.png" width="760" height="580" loading="lazy" alt="Quay's settings panel on the Appearance pane">
-        <figcaption>Settings panel</figcaption>
+        <img src="screenshots/menu.png" width="512" height="660" loading="lazy" alt="The tile menu for Firefox: its own shortcuts, pinning, folders and closing">
+        <figcaption>Tile menu</figcaption>
+      </figure>
+      <figure class="wide">
+        <img src="screenshots/settings.png" width="760" height="580" loading="lazy" alt="Quay's settings panel on the Windows section, choosing where previews open">
+        <figcaption>Settings panel, Windows section</figcaption>
       </figure>
     </div>
   </section>

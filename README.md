@@ -99,13 +99,18 @@ _Released 2026-09-13 · [Full changelog](CHANGELOG.md)_
 ## A closer look
 
 <p align="center">
-  <img src="docs/screenshots/preview.png" height="360" alt="Window previews for the terminal, open inside the rail">
+  <img src="docs/screenshots/preview.png" height="360" alt="Live previews of two Text Editor windows, open beside the rail">
   &nbsp;
-  <img src="docs/screenshots/settings.png" height="360" alt="Quay's settings panel on the Appearance pane">
+  <img src="docs/screenshots/menu.png" height="360" alt="The tile menu for Firefox: its own shortcuts, pinning, folders and closing">
 </p>
 
-Window previews for an app with two terminals, and Quay's own settings panel.
-Captured on Hyprland at 1920×1080.
+<p align="center">
+  <img src="docs/screenshots/settings.png" width="560" alt="Quay's settings panel on the Windows section, choosing where previews open">
+</p>
+
+Window previews beside the rail for an app with two windows, the tile menu, and
+the Windows section of Quay's own settings panel. Captured on Hyprland at
+1920×1080.
 
 ## Requirements
 
