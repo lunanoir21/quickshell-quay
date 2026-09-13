@@ -56,7 +56,7 @@ Singleton {
     function launch(id) {
         let entry = root.entryFor(id);
         if (!entry) return;
-        Quickshell.execDetached(["sh", "-c", entry.exec]);
+        root.run(entry, entry.exec);
     }
 
     // One of the entry's own [Desktop Action] shortcuts, e.g. a private window.
@@ -64,7 +64,38 @@ Singleton {
         let entry = root.entryFor(id);
         if (!entry || !entry.actions) return;
         let action = entry.actions.find(candidate => candidate.id === actionId);
-        if (action) Quickshell.execDetached(["sh", "-c", action.exec]);
+        if (action) root.run(entry, action.exec);
+    }
+
+    // A Terminal=true entry (btop, Vim) has no window of its own and needs a
+    // terminal to run in: $TERMINAL if set, then xdg-terminal-exec, then the
+    // first common terminal installed. The command arrives as $1, unquoted by
+    // nothing, so it survives any quoting of its own.
+    readonly property string terminalScript: [
+        'cmd=$1',
+        'term=',
+        'if [ -n "${TERMINAL:-}" ] && command -v "${TERMINAL%% *}" >/dev/null 2>&1; then',
+        '  term=$TERMINAL',
+        'elif command -v xdg-terminal-exec >/dev/null 2>&1; then',
+        '  exec xdg-terminal-exec sh -c "$cmd"',
+        'else',
+        '  for t in kitty foot alacritty wezterm ghostty konsole gnome-terminal xfce4-terminal xterm; do',
+        '    if command -v "$t" >/dev/null 2>&1; then term=$t; break; fi',
+        '  done',
+        'fi',
+        '[ -n "$term" ] || { echo "quay: no terminal found for a Terminal=true entry" >&2; exit 127; }',
+        'case "${term%% *}" in',
+        '  kitty|foot) exec $term sh -c "$cmd" ;;',
+        '  wezterm) exec $term start -- sh -c "$cmd" ;;',
+        '  gnome-terminal) exec $term -- sh -c "$cmd" ;;',
+        '  xfce4-terminal) exec $term -x sh -c "$cmd" ;;',
+        '  *) exec $term -e sh -c "$cmd" ;;',
+        'esac'
+    ].join("\n")
+
+    function run(entry, command) {
+        if (entry.terminal) Quickshell.execDetached(["sh", "-c", root.terminalScript, "quay-launch", command]);
+        else Quickshell.execDetached(["sh", "-c", command]);
     }
 
     function shellQuote(value) {
@@ -103,9 +134,9 @@ Singleton {
 
         if (/%[fu]/.test(raw) && paths.length > 1) {
             for (let i = 0; i < paths.length; i++)
-                Quickshell.execDetached(["sh", "-c", expand([paths[i]], [links[i]])]);
+                root.run(entry, expand([paths[i]], [links[i]]));
         } else {
-            Quickshell.execDetached(["sh", "-c", expand(paths, links)]);
+            root.run(entry, expand(paths, links));
         }
         return true;
     }

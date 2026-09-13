@@ -116,6 +116,10 @@ Singleton {
     }
 
     function markLaunching(id) {
+        // A terminal app's window belongs to the terminal, never to this id,
+        // so its pulse could only ever time out.
+        let entry = QuayApps.entryFor(id);
+        if (entry && entry.terminal) return;
         let next = Object.assign({}, root.launching);
         next[root.launchKey(id)] = { "id": id, "windows": QuayWindows.windowCount(id), "at": Date.now() };
         root.launching = next;
