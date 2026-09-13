@@ -822,7 +822,7 @@ h3 { margin: 56px 0 18px; font: 700 14px/1.4 var(--mono); color: var(--ink); }
   <span class="top-mark">Quay</span>
   <span class="top-meta">For Quickshell · wlr-layer-shell</span>
   <!-- changelog:site-link:start -->
-  <a class="top-link" href="#changelog">What's new in 1.1.0</a>
+  <a class="top-link" href="#changelog">What's new in 1.1.1</a>
   <!-- changelog:site-link:end -->
   <a class="top-link" href="https://github.com/lunanoir21/quickshell-quay">Source on GitHub</a>
 </header>
@@ -1027,11 +1027,32 @@ ShellRoot {
     <h2 id="changelog-title">Changelog</h2>
     <p class="section-lede">Every release, newest first. The same notes live in <a href="https://github.com/lunanoir21/quickshell-quay/blob/main/CHANGELOG.md">CHANGELOG.md</a>.</p>
     <div class="releases">
-      <article class="release is-latest" id="v1-1-0">
+      <article class="release is-latest" id="v1-1-1">
+        <header class="release-head">
+          <h3>1.1.1</h3>
+          <time datetime="2026-09-13">2026-09-13</time>
+          <span class="release-tag">Latest</span>
+        </header>
+        <div class="release-body">
+          <div class="release-group">
+            <p class="release-kind">Fixed</p>
+            <ul class="changes">
+              <li><strong>Standalone installs.</strong> Run as its own config (<code>quickshell -p Main.qml</code>), Quay built its script paths without a separator, so settings were never read or saved and no apps were found. Install paths with spaces work too.</li>
+              <li><strong>Terminal apps</strong> (<code>Terminal=true</code>, such as btop or Vim) open in a terminal: <code>$TERMINAL</code>, then <code>xdg-terminal-exec</code>, then the first common terminal installed. Before, nothing appeared.</li>
+            </ul>
+          </div>
+          <div class="release-group">
+            <p class="release-kind">Changed</p>
+            <ul class="changes">
+              <li>The READMEs list what Quay needs from the compositor, that window previews are Hyprland-only with Quickshell 0.3, and that the interface icons come from a Nerd Font.</li>
+            </ul>
+          </div>
+        </div>
+      </article>
+      <article class="release" id="v1-1-0">
         <header class="release-head">
           <h3>1.1.0</h3>
           <time datetime="2026-09-13">2026-09-13</time>
-          <span class="release-tag">Latest</span>
         </header>
         <div class="release-body">
           <div class="release-group">

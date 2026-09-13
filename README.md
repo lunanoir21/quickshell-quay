@@ -35,30 +35,18 @@ settings panel, its own app index. Vendoring it into a shell takes one import
 and one line.
 
 <!-- changelog:readme:start -->
-## What's new in 1.1.0
+## What's new in 1.1.1
 
 _Released 2026-09-13 · [Full changelog](CHANGELOG.md)_
 
-**Added**
+**Fixed**
 
-- **Tile menu.** Right click a tile for the app's own shortcuts (a private window, a profile manager), a new window, pinning, moving it into a folder, and closing its windows. Folders get Open and Ungroup. It works from the keyboard too.
-- **Window previews beside the rail.** Previews open next to the rail with larger live thumbnails, inside the rail as before, or not at all, after a delay you choose.
-- **Close windows from their previews.** Hovering a thumbnail shows a close button.
-- **File drops.** Drop a file on an app to open it with that app. In hover mode, carrying a file to the edge brings the rail out.
-- **Middle click** opens a new window of the app.
-- **Launch feedback.** A tile pulses until the app it started shows a window, and a second click in the meantime doesn't start it twice.
-- **Out of the way in fullscreen.** While a focused window is fullscreen, the rail and its hot edge stand down (`trigger.hideOnFullscreen`).
-- **System theme.** `"theme": "auto"` follows the system's light/dark preference through xdg-desktop-portal, live.
-- **Windows section in settings**, with a small diagram of where previews land.
-- **This changelog**, with the latest release in the READMEs and every release on the website.
+- **Standalone installs.** Run as its own config (`quickshell -p Main.qml`), Quay built its script paths without a separator, so settings were never read or saved and no apps were found. Install paths with spaces work too.
+- **Terminal apps** (`Terminal=true`, such as btop or Vim) open in a terminal: `$TERMINAL`, then `xdg-terminal-exec`, then the first common terminal installed. Before, nothing appeared.
 
 **Changed**
 
-- Right click opens the tile menu instead of pinning straight away; pinning lives in the menu.
-- A preview stays open while its app still has windows, so closing one keeps the others in view.
-- The settings panel animates: it scales in and out, one highlight slides between sections, panes slide in from the direction of travel, and choice controls move a single thumb.
-- The settings section list keeps a fixed width, so switching sections no longer shifts the layout.
-- New folders are named in English ("New folder") rather than Turkish.
+- The READMEs list what Quay needs from the compositor, that window previews are Hyprland-only with Quickshell 0.3, and that the interface icons come from a Nerd Font.
 
 <!-- changelog:readme:end -->
 
@@ -115,7 +103,14 @@ the Windows section of Quay's own settings panel. Captured on Hyprland at
 ## Requirements
 
 - [Quickshell](https://quickshell.outfoxxed.me) 0.3 or newer
-- A `wlr-layer-shell` compositor; Hyprland is what it is developed on
+- A Wayland compositor with `wlr-layer-shell` and
+  `wlr-foreign-toplevel-management`: Hyprland (what Quay is developed on), Sway
+  and other wlroots compositors, or niri. Without the second, running marks,
+  window counts and previews stay empty.
+- Window previews capture windows through Hyprland's toplevel export protocol,
+  so with Quickshell 0.3 they show on Hyprland only.
+- A [Nerd Font](https://www.nerdfonts.com) installed, for the interface icons
+  (the gear, menus and settings); without one they show as empty boxes.
 - `python3`, `jq`, `bash` and `flock` (util-linux)
 - Optional: `wl-copy`, for the settings panel's copy button
 - Optional: `gdbus` (glib2) and xdg-desktop-portal, for the System theme

@@ -34,30 +34,18 @@ paneli, kendi uygulama dizini vardır. Bir shell'e eklemek bir import ve bir
 satır sürer.
 
 <!-- changelog:readme:start -->
-## 1.1.0 sürümündeki yenilikler
+## 1.1.1 sürümündeki yenilikler
 
 _2026-09-13 tarihinde yayınlandı · [Tüm değişiklik günlüğü](CHANGELOG.tr.md)_
 
-**Eklenenler**
+**Düzeltilenler**
 
-- **Kutucuk menüsü.** Bir kutucuğa sağ tıklayınca uygulamanın kendi kısayolları (gizli pencere, profil yöneticisi gibi), yeni pencere, sabitleme, klasöre taşıma ve pencerelerini kapatma çıkar. Klasörlerde Aç ve Grubu çöz bulunur. Klavyeyle de kullanılır.
-- **Rayın yanında pencere önizlemesi.** Önizlemeler rayın yanında daha büyük canlı küçük resimlerle, eskisi gibi rayın içinde ya da hiç açılmayabilir; açılmadan önceki bekleme süresi ayarlanır.
-- **Önizlemeden pencere kapatma.** Küçük resmin üzerine gelince kapatma düğmesi çıkar.
-- **Dosya bırakma.** Bir dosyayı uygulamanın üstüne bırakınca o uygulamayla açılır. Hover modunda dosyayı kenara getirmek rayı çıkarır.
-- **Orta tık** uygulamanın yeni bir penceresini açar.
-- **Açılış geri bildirimi.** Kutucuk, başlattığı uygulamanın penceresi gelene kadar nabız atar; bu arada yapılan ikinci tıklama onu iki kez açmaz.
-- **Tam ekranda kenara çekilir.** Odaktaki pencere tam ekranken ray ve sıcak kenarı devre dışı kalır (`trigger.hideOnFullscreen`).
-- **Sistem teması.** `"theme": "auto"`, sistemin açık/koyu tercihini xdg-desktop-portal üzerinden anında izler.
-- **Ayarlarda Pencereler bölümü**, önizlemenin nereye açılacağını gösteren küçük bir şemayla.
-- **Bu değişiklik günlüğü**; son sürüm README'lerde, tüm sürümler web sitesinde.
+- **Tek başına kurulum.** Kendi yapılandırması olarak çalıştırıldığında (`quickshell -p Main.qml`) Quay script yollarını ayraç olmadan kuruyordu; bu yüzden ayarlar hiç okunmuyor, kaydedilmiyor ve hiç uygulama bulunmuyordu. Boşluk içeren kurulum yolları da artık çalışır.
+- **Terminal uygulamaları** (btop ya da Vim gibi `Terminal=true` olanlar) bir terminalde açılır: önce `$TERMINAL`, sonra `xdg-terminal-exec`, sonra yüklü ilk yaygın terminal. Önceden hiçbir şey görünmüyordu.
 
 **Değişenler**
 
-- Sağ tık artık doğrudan sabitlemek yerine kutucuk menüsünü açar; sabitleme menünün içindedir.
-- Önizleme, uygulamanın hâlâ penceresi varken açık kalır; birini kapatınca diğerleri görünmeye devam eder.
-- Ayar paneli hareketlendi: açılıp kapanırken ölçeklenir, tek bir vurgu bölümler arasında kayar, içerik gidilen yönden kayarak gelir, seçim düğmelerinde tek bir işaret kayar.
-- Ayar bölümleri listesi sabit genişlikte kalır; bölüm değiştirmek düzeni artık kaydırmaz.
-- Yeni klasörler Türkçe yerine İngilizce adlandırılır ("New folder").
+- README'ler Quay'in compositor'dan neye ihtiyaç duyduğunu, pencere önizlemelerinin Quickshell 0.3 ile yalnızca Hyprland'de çalıştığını ve arayüz simgelerinin bir Nerd Font'tan geldiğini belirtir.
 
 <!-- changelog:readme:end -->
 
@@ -115,7 +103,14 @@ menüsü ve Quay'in kendi ayar panelindeki Pencereler bölümü. Hyprland'de
 ## Gereksinimler
 
 - [Quickshell](https://quickshell.outfoxxed.me) 0.3 veya daha yenisi
-- `wlr-layer-shell` destekleyen bir compositor; geliştirildiği ortam Hyprland
+- `wlr-layer-shell` ve `wlr-foreign-toplevel-management` destekleyen bir Wayland
+  compositor: Hyprland (Quay'in geliştirildiği ortam), Sway ve diğer wlroots
+  tabanlı compositor'lar ya da niri. İkincisi yoksa çalışma işaretleri, pencere
+  sayıları ve önizlemeler boş kalır.
+- Pencere önizlemeleri pencereleri Hyprland'in toplevel export protokolüyle
+  yakalar; bu yüzden Quickshell 0.3 ile yalnızca Hyprland'de görünür.
+- Arayüz simgeleri (dişli, menüler, ayarlar) için yüklü bir
+  [Nerd Font](https://www.nerdfonts.com); yoksa simgeler boş kutu olarak görünür.
 - `python3`, `jq`, `bash` ve `flock` (util-linux)
 - İsteğe bağlı: ayar panelindeki kopyala düğmesi için `wl-copy`
 - İsteğe bağlı: Sistem teması için `gdbus` (glib2) ve xdg-desktop-portal

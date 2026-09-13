@@ -8,6 +8,23 @@ This file and [CHANGELOG.tr.md](CHANGELOG.tr.md) are the only places to write
 release notes. `python3 scripts/changelog.py` copies the latest release into
 the READMEs and every release onto the website.
 
+## [1.1.1] - 2026-09-13
+
+### Fixed
+
+- **Standalone installs.** Run as its own config (`quickshell -p Main.qml`),
+  Quay built its script paths without a separator, so settings were never read
+  or saved and no apps were found. Install paths with spaces work too.
+- **Terminal apps** (`Terminal=true`, such as btop or Vim) open in a terminal:
+  `$TERMINAL`, then `xdg-terminal-exec`, then the first common terminal
+  installed. Before, nothing appeared.
+
+### Changed
+
+- The READMEs list what Quay needs from the compositor, that window previews
+  are Hyprland-only with Quickshell 0.3, and that the interface icons come from
+  a Nerd Font.
+
 ## [1.1.0] - 2026-09-13
 
 ### Added
@@ -70,5 +87,6 @@ the READMEs and every release onto the website.
   and 165 Hz.
 - **IPC:** `toggle`, `show`, `hide`, `settings` and `refreshApps`.
 
+[1.1.1]: https://github.com/lunanoir21/quickshell-quay/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/lunanoir21/quickshell-quay/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/lunanoir21/quickshell-quay/releases/tag/v1.0.0

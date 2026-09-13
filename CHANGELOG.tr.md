@@ -9,6 +9,24 @@ Sürüm notları yalnızca bu dosyaya ve [CHANGELOG.md](CHANGELOG.md) dosyasına
 yazılır. `python3 scripts/changelog.py` son sürümü README'lere, tüm sürümleri
 web sitesine kopyalar.
 
+## [1.1.1] - 2026-09-13
+
+### Düzeltilenler
+
+- **Tek başına kurulum.** Kendi yapılandırması olarak çalıştırıldığında
+  (`quickshell -p Main.qml`) Quay script yollarını ayraç olmadan kuruyordu; bu
+  yüzden ayarlar hiç okunmuyor, kaydedilmiyor ve hiç uygulama bulunmuyordu.
+  Boşluk içeren kurulum yolları da artık çalışır.
+- **Terminal uygulamaları** (btop ya da Vim gibi `Terminal=true` olanlar) bir
+  terminalde açılır: önce `$TERMINAL`, sonra `xdg-terminal-exec`, sonra yüklü
+  ilk yaygın terminal. Önceden hiçbir şey görünmüyordu.
+
+### Değişenler
+
+- README'ler Quay'in compositor'dan neye ihtiyaç duyduğunu, pencere
+  önizlemelerinin Quickshell 0.3 ile yalnızca Hyprland'de çalıştığını ve arayüz
+  simgelerinin bir Nerd Font'tan geldiğini belirtir.
+
 ## [1.1.0] - 2026-09-13
 
 ### Eklenenler
@@ -71,5 +89,6 @@ web sitesine kopyalar.
   165 Hz'de de aynı hızdadır.
 - **IPC:** `toggle`, `show`, `hide`, `settings` ve `refreshApps`.
 
+[1.1.1]: https://github.com/lunanoir21/quickshell-quay/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/lunanoir21/quickshell-quay/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/lunanoir21/quickshell-quay/releases/tag/v1.0.0
