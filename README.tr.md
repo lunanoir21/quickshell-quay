@@ -44,15 +44,25 @@ satır sürer.
   bir uygulamanın pencerelerini sayar, kenardaki noktalar sayfayı gösterir.
 - **Canlı pencere önizlemesi.** Birden fazla penceresi olan bir uygulamanın
   üzerinde imleci bekletince her pencereyi canlı görür, doğrudan birini seçersin —
-  rayın yanında daha büyük küçük resimlerle ya da rayın içinde. Normal tıklama
-  yine pencereler arasında döner.
+  rayın yanında daha büyük küçük resimlerle ya da rayın içinde — küçük resminden
+  pencereyi kapatabilirsin de. Normal tıklama yine pencereler arasında döner.
+- **Her kutucukta bir menü.** Sağ tıklayınca uygulamanın kendi kısayolları (gizli
+  pencere, yeni profil gibi), yeni pencere, sabitleme, klasöre taşıma ya da tüm
+  pencerelerini kapatma çıkar. Orta tık doğrudan yeni pencere açar.
+- **Dosyayı uygulamaya bırak.** Bir dosyayı kutucuğun üstüne sürükleyince o
+  uygulamayla açılır; hover modunda dosyayı kenara getirmek rayı çıkarır.
+- **Açılış geri bildirimi.** Başlatılan uygulamanın penceresi gelene kadar
+  kutucuk nabız atar; bu arada yapılan ikinci tıklama onu iki kez açmaz.
+- **Tam ekranda kenara çekilir.** Odaktaki pencere tam ekranken — oyun, video —
+  ray ve sıcak kenarı devre dışı kalır.
 - **Sürükle-bırak ile klasörler.** Bir kutucuğu taşımak için sürükle; klasör
   yapmak için başka birinin üstüne bırak.
 - **Üç görünme biçimi.** Her zaman ekranda, imleç kenara gelince kayarak ya da
   bir tuşla.
 - **Asla yer kaplamaz.** Quay pencerelerinin üzerinde durur ve özel alan ayırmaz;
   açıldığında hiçbir pencere küçülmez.
-- **İki tema.** Saf siyah ya da saf beyaz.
+- **Siyah, beyaz ya da sistemin tercihi.** İki yönde de saf tek renk, ya da
+  sistemin açık/koyu tercihini anında izleyen tema.
 - **Kendi ayar paneli.** Her şey rayın üstündeki dişli simgesinden ayarlanır —
   ayrı bir ayarlar uygulaması gerekmez.
 - **Kare süresine göre hareket.** Sürüklerken otomatik kaydırma gerçek kare
@@ -75,6 +85,7 @@ kendi ayar paneli. Hyprland'de 1920×1080 çözünürlükte çekildi.
 - `wlr-layer-shell` destekleyen bir compositor; geliştirildiği ortam Hyprland
 - `python3`, `jq`, `bash` ve `flock` (util-linux)
 - İsteğe bağlı: ayar panelindeki kopyala düğmesi için `wl-copy`
+- İsteğe bağlı: Sistem teması için `gdbus` (glib2) ve xdg-desktop-portal
 
 ## Kurulum
 
@@ -135,7 +146,10 @@ layerrule {
 | Tıklama | Uygulamayı açar ya da öne getirir; tekrar tıklamak pencereleri arasında döner |
 | İmleci bir uygulamada bekletmek | Birden fazla penceresi varsa her birini canlı gösterir |
 | Klasöre tıklama | Yerinde açar |
-| Sağ tıklama | Sabitler ya da sabitlemeyi kaldırır |
+| Orta tıklama | Uygulamanın yeni bir penceresini açar |
+| Sağ tıklama | Menü: kısayollar, yeni pencere, sabitleme, klasörler, pencereleri kapatma |
+| Dosyayı bir uygulamaya bırakmak | Dosyayı o uygulamayla açar |
+| Pencere önizlemesindeki × | O pencereyi kapatır |
 | Kutucuğu sürüklemek | Yerini değiştirir |
 | Kutucuğu başka birinin üstüne bırakmak | Klasör yapar ya da klasöre ekler |
 | Üstteki dişli | Quay'in ayarlarını açar |
@@ -151,13 +165,14 @@ boyutları sınırlar; bir yazım hatası rayı ulaşılamaz hale getiremez.
 {
   "schemaVersion": 1,
   "appearance": {
-    "theme": "black"              // "black" | "white"
+    "theme": "black"              // "black" | "white" | "auto" (sistemi izle)
   },
   "trigger": {
     "mode": "hover",              // "always" | "hover" | "shortcut"
     "edge": "right",              // "left" | "right" | "top" | "bottom"
     "hoverRevealDelayMs": 90,     // ray kaymadan önce imlecin bekleme süresi
-    "hoverHideDelayMs": 400       // imleç ayrıldıktan sonraki bekleme süresi
+    "hoverHideDelayMs": 400,      // imleç ayrıldıktan sonraki bekleme süresi
+    "hideOnFullscreen": true      // odaktaki pencere tam ekranken gizlen
   },
   "layout": {
     "columns": 1,                 // raydaki sütun sayısı

@@ -782,7 +782,10 @@ h3 { margin: 56px 0 18px; font: 700 14px/1.4 var(--mono); color: var(--ink); }
       <div class="row"><dt>Wheel</dt><dd>Moves one row, then snaps.</dd></div>
       <div class="row"><dt>Click</dt><dd>Opens the app, or brings it forward. Click again to go through its windows.</dd></div>
       <div class="row"><dt>Hold the pointer</dt><dd>An app with more than one window shows each window live, so you can pick one.</dd></div>
-      <div class="row"><dt>Right click</dt><dd>Pins or unpins.</dd></div>
+      <div class="row"><dt>Middle click</dt><dd>Opens a new window of the app.</dd></div>
+      <div class="row"><dt>Right click</dt><dd>Opens a menu: the app's own shortcuts, a new window, pinning, folders, and closing its windows.</dd></div>
+      <div class="row"><dt>Drop a file on an app</dt><dd>Opens the file with it. Carried to the edge, the file brings the rail out.</dd></div>
+      <div class="row"><dt>× on a preview</dt><dd>Closes that window.</dd></div>
       <div class="row"><dt>Drag</dt><dd>Moves a tile to a new spot.</dd></div>
       <div class="row"><dt>Drop on a tile</dt><dd>Makes a folder, or adds to one.</dd></div>
     </dl>
@@ -834,11 +837,12 @@ h3 { margin: 56px 0 18px; font: 700 14px/1.4 var(--mono); color: var(--ink); }
       <div class="setting">
         <div>
           <p class="setting-label">Theme</p>
-          <p class="setting-hint">Pure black or pure white. This page follows along.</p>
+          <p class="setting-hint">Pure black, pure white, or whichever the system prefers. This page follows along.</p>
         </div>
         <div class="seg" role="group" aria-label="Theme">
           <button type="button" data-theme-choice="black">Black</button>
           <button type="button" data-theme-choice="white">White</button>
+          <button type="button" data-theme-choice="auto">System</button>
         </div>
       </div>
       <div class="setting">
@@ -917,12 +921,13 @@ ShellRoot {
     <p class="section-lede">Settings live in <code>~/.config/quickshell/quay/settings.json</code>. Quay creates the file on first run and applies hand edits live. Values it does not recognise are ignored, so a typo cannot leave the rail out of reach.</p>
     <div class="code code-block">
 <code>{
-  "appearance": { "theme": "black" },     <span class="c">// black | white</span>
+  "appearance": { "theme": "black" },     <span class="c">// black | white | auto</span>
   "trigger": {
     "mode": "hover",                       <span class="c">// always | hover | shortcut</span>
     "edge": "right",                       <span class="c">// left | right | top | bottom</span>
     "hoverRevealDelayMs": 90,
-    "hoverHideDelayMs": 400
+    "hoverHideDelayMs": 400,
+    "hideOnFullscreen": true
   },
   "layout": { "columns": 1, "rows": 6, "iconSize": 52, "spacing": 10 },
   "content": {
@@ -992,18 +997,20 @@ ShellRoot {
     });
   });
 
-  // ---- theme: the same two choices Quay offers ----------------------------
+  // ---- theme: the same three choices Quay offers --------------------------
+  // "auto" is the page with no data-theme at all, following the system.
   const themeButtons = document.querySelectorAll("[data-theme-choice]");
   const activeTheme = () => {
     const chosen = root.dataset.theme;
-    if (chosen === "black" || chosen === "white") return chosen;
-    return darkScheme.matches ? "black" : "white";
+    return chosen === "black" || chosen === "white" ? chosen : "auto";
   };
   const syncTheme = () => themeButtons.forEach((button) =>
     button.setAttribute("aria-pressed", String(button.dataset.themeChoice === activeTheme())));
   themeButtons.forEach((button) => button.addEventListener("click", () => {
-    root.dataset.theme = button.dataset.themeChoice;
-    try { localStorage.setItem("quay-theme", button.dataset.themeChoice); } catch (e) {}
+    const choice = button.dataset.themeChoice;
+    if (choice === "auto") delete root.dataset.theme;
+    else root.dataset.theme = choice;
+    try { localStorage.setItem("quay-theme", choice); } catch (e) {}
     syncTheme();
   }));
   darkScheme.addEventListener("change", syncTheme);

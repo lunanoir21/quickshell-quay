@@ -44,14 +44,25 @@ and one line.
   a number counts an app's windows, and dots on the side show the page.
 - **Live window previews.** Hold the pointer on an app with more than one window
   to see each one and pick it directly — beside the rail with larger thumbnails,
-  or inside it. A plain click still cycles through them.
+  or inside it — and close one from its thumbnail. A plain click still cycles
+  through them.
+- **A menu on every tile.** Right click for the app's own shortcuts (a private
+  window, a new profile), a new window, pinning, moving it into a folder, or
+  closing all its windows. Middle click opens a new window straight away.
+- **Drop files on an app.** Drag a file onto a tile to open it with that app;
+  in hover mode, carrying it to the edge brings the rail out.
+- **Launch feedback.** A tile breathes until the app it started shows a window,
+  and a second click in the meantime doesn't start it twice.
+- **Out of the way in fullscreen.** While a focused window is fullscreen — a
+  game, a video — the rail and its hot edge stand down.
 - **Folders by drag and drop.** Drag a tile to move it; drop it onto another to
   make a folder.
 - **Three ways to appear.** Always on screen, sliding in when the pointer reaches
   the edge, or opened with a key.
 - **Never takes space.** Quay floats over your windows and reserves no exclusive
   zone, so nothing is resized when it appears.
-- **Two themes.** Pure black or pure white.
+- **Black, white, or the system's.** Pure monochrome either way, or following
+  the system's light/dark preference live.
 - **Its own settings panel.** Everything is configurable from the gear at the top
   of the rail — no host settings app needed.
 - **Frame-time correct motion.** Drag autoscroll is integrated from real frame
@@ -74,6 +85,7 @@ Captured on Hyprland at 1920×1080.
 - A `wlr-layer-shell` compositor; Hyprland is what it is developed on
 - `python3`, `jq`, `bash` and `flock` (util-linux)
 - Optional: `wl-copy`, for the settings panel's copy button
+- Optional: `gdbus` (glib2) and xdg-desktop-portal, for the System theme
 
 ## Install
 
@@ -134,7 +146,10 @@ layerrule {
 | Click | Open the app, or focus it; click again to cycle its windows |
 | Hold the pointer on an app | See each of its windows live, when it has more than one |
 | Click a folder | Open it in place |
-| Right click | Pin or unpin |
+| Middle click | Open a new window of the app |
+| Right click | Menu: shortcuts, new window, pin, folders, close windows |
+| Drop a file on an app | Open the file with it |
+| × on a window preview | Close that window |
 | Drag a tile | Move it |
 | Drop a tile onto another | Make a folder, or add to one |
 | Gear at the top | Open Quay's settings |
@@ -150,13 +165,14 @@ are clamped, so a typo cannot leave the rail unreachable.
 {
   "schemaVersion": 1,
   "appearance": {
-    "theme": "black"              // "black" | "white"
+    "theme": "black"              // "black" | "white" | "auto" (follow the system)
   },
   "trigger": {
     "mode": "hover",              // "always" | "hover" | "shortcut"
     "edge": "right",              // "left" | "right" | "top" | "bottom"
     "hoverRevealDelayMs": 90,     // pointer dwell before the rail slides in
-    "hoverHideDelayMs": 400       // grace period after the pointer leaves
+    "hoverHideDelayMs": 400,      // grace period after the pointer leaves
+    "hideOnFullscreen": true      // stand down while a focused window is fullscreen
   },
   "layout": {
     "columns": 1,                 // tiles across the rail
