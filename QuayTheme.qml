@@ -2,13 +2,20 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import Quickshell.Io
 
 // Two deliberately monochrome palettes. Quay must render identically without
-// any host config, so nothing here reads an external theme source.
+// any host config, so the only outside input is the system light/dark
+// preference, and only when the theme is set to follow it.
 Singleton {
     id: root
 
+    // xdg-desktop-portal's org.freedesktop.appearance color-scheme: 1 prefers
+    // dark, 2 prefers light, 0 has no preference and keeps Quay's black.
+    property bool systemDark: true
+
     readonly property bool light: QuayStore.theme === "white"
+        || (QuayStore.theme === "auto" && !root.systemDark)
 
     readonly property color base: root.light ? "#ffffff" : "#000000"
     readonly property color mantle: root.light ? "#f2f2f2" : "#0a0a0a"
@@ -30,5 +37,39 @@ Singleton {
 
     function alpha(color, a) {
         return Qt.rgba(color.r, color.g, color.b, a);
+    }
+
+    function applyScheme(text) {
+        let match = String(text || "").match(/uint32 (\d)/);
+        if (match) root.systemDark = match[1] !== "2";
+    }
+
+    readonly property bool followingSystem: QuayStore.theme === "auto"
+    readonly property var portalCall: ["gdbus", "call", "--session",
+        "--dest", "org.freedesktop.portal.Desktop",
+        "--object-path", "/org/freedesktop/portal/desktop",
+        "--method", "org.freedesktop.portal.Settings.ReadOne",
+        "org.freedesktop.appearance", "color-scheme"]
+
+    Process {
+        running: root.followingSystem
+        command: root.portalCall
+        stdout: StdioCollector {
+            onStreamFinished: root.applyScheme(this.text)
+        }
+    }
+
+    // Changes arrive as SettingChanged signals; only this key matters.
+    Process {
+        running: root.followingSystem
+        command: ["gdbus", "monitor", "--session",
+            "--dest", "org.freedesktop.portal.Desktop",
+            "--object-path", "/org/freedesktop/portal/desktop"]
+        stdout: SplitParser {
+            onRead: line => {
+                if (line.indexOf("'org.freedesktop.appearance', 'color-scheme'") !== -1)
+                    root.applyScheme(line);
+            }
+        }
     }
 }

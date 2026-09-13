@@ -19,7 +19,7 @@ Singleton {
         return base + "/quickshell/quay/settings.json";
     }
 
-    property string theme: "black"             // black | white
+    property string theme: "black"             // black | white | auto (follows the system)
 
     property string triggerMode: "hover"      // always | hover | shortcut
     property string triggerEdge: "right"      // left | right | top | bottom
@@ -63,7 +63,7 @@ Singleton {
         onFileChanged: reader.running = true
     }
 
-    readonly property var _themes: ["black", "white"]
+    readonly property var _themes: ["black", "white", "auto"]
     readonly property var _triggerModes: ["always", "hover", "shortcut"]
     readonly property var _edges: ["left", "right", "top", "bottom"]
     readonly property var _extrasModes: ["pinned", "running", "recent"]

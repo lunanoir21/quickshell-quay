@@ -267,12 +267,13 @@ PanelWindow {
 
             QuaySettingRow {
                 label: qsTr("Theme")
-                hint: qsTr("Pure monochrome, in either direction")
+                hint: qsTr("Pure monochrome, or whichever the system prefers")
 
                 QuaySegmented {
                     options: [
                         { value: "black", label: qsTr("Black") },
-                        { value: "white", label: qsTr("White") }
+                        { value: "white", label: qsTr("White") },
+                        { value: "auto", label: qsTr("System") }
                     ]
                     currentValue: QuayStore.theme
                     onPicked: value => QuayStore.setOption("appearance.theme", value)
