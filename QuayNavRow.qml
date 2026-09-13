@@ -1,6 +1,7 @@
 import QtQuick
 
-// Section entry in the settings panel's left column.
+// Section entry in the settings panel's left column. The current-row highlight
+// is drawn once by the panel and slides between rows, so this only paints hover.
 Item {
     id: root
 
@@ -16,19 +17,9 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: QuayTheme.radiusSmall
-        color: root.current
-            ? QuayTheme.alpha(QuayTheme.accent, 0.14)
-            : (hover.hovered ? QuayTheme.alpha(QuayTheme.surface1, 0.5) : "transparent")
-    }
+        color: hover.hovered && !root.current ? QuayTheme.alpha(QuayTheme.surface1, 0.5) : "transparent"
 
-    Rectangle {
-        visible: root.current
-        width: 2
-        height: 16
-        radius: 1
-        color: QuayTheme.accent
-        x: 2
-        y: (parent.height - height) / 2
+        Behavior on color { ColorAnimation { duration: 140 } }
     }
 
     Text {
@@ -40,6 +31,8 @@ Item {
         color: root.current ? QuayTheme.accent : QuayTheme.subtext0
         font.family: QuayTheme.mono
         font.pixelSize: 13
+
+        Behavior on color { ColorAnimation { duration: 180 } }
     }
 
     Column {
@@ -56,6 +49,8 @@ Item {
             font.family: QuayTheme.mono
             font.pixelSize: 11
             font.weight: root.current ? Font.DemiBold : Font.Normal
+
+            Behavior on color { ColorAnimation { duration: 180 } }
         }
 
         Text {

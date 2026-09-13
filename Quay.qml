@@ -85,8 +85,10 @@ PanelWindow {
         }
     }
 
+    // The panel plays its own closing animation before it asks to be unloaded.
     function openSettings() {
-        settingsLoader.active = !settingsLoader.active;
+        if (!settingsLoader.active) settingsLoader.active = true;
+        else if (settingsLoader.status === Loader.Ready) settingsLoader.item.requestClose();
     }
 
     readonly property bool previewBeside: QuayStore.previewMode === "beside"

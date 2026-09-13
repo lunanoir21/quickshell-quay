@@ -26,6 +26,50 @@ PanelWindow {
         { key: "apps", glyph: "󰀻", label: qsTr("Applications"), hint: qsTr("Pins and folders") }
     ]
 
+    readonly property int sectionIndex: root.sections.findIndex(s => s.key === root.section)
+
+    // The pane slides in from the direction of travel through the list.
+    function switchSection(key) {
+        if (key === root.section) return;
+        let target = root.sections.findIndex(s => s.key === key);
+        paneEnter.stop();
+        paneShift.y = (target > root.sectionIndex ? 1 : -1) * 14;
+        sectionLoader.opacity = 0;
+        root.section = key;
+        paneEnter.start();
+    }
+
+    // Plays the closing animation, then asks the owner to unload the panel.
+    property bool closing: false
+
+    function requestClose() {
+        if (root.closing) return;
+        root.closing = true;
+        openAnimation.stop();
+        closeAnimation.start();
+    }
+
+    Component.onCompleted: openAnimation.start()
+
+    ParallelAnimation {
+        id: openAnimation
+        NumberAnimation { target: card; property: "opacity"; to: 1; duration: 200; easing.type: Easing.OutCubic }
+        NumberAnimation { target: card; property: "scale"; to: 1; duration: 280; easing.type: Easing.OutBack; easing.overshoot: 1.2 }
+    }
+
+    ParallelAnimation {
+        id: closeAnimation
+        onFinished: root.dismissed()
+        NumberAnimation { target: card; property: "opacity"; to: 0; duration: 140; easing.type: Easing.InCubic }
+        NumberAnimation { target: card; property: "scale"; to: 0.96; duration: 140; easing.type: Easing.InCubic }
+    }
+
+    ParallelAnimation {
+        id: paneEnter
+        NumberAnimation { target: sectionLoader; property: "opacity"; to: 1; duration: 220; easing.type: Easing.OutCubic }
+        NumberAnimation { target: paneShift; property: "y"; to: 0; duration: 260; easing.type: Easing.OutCubic }
+    }
+
     WlrLayershell.namespace: "quay-settings"
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
@@ -43,17 +87,25 @@ PanelWindow {
         color: QuayTheme.base
         border.width: 1
         border.color: QuayTheme.alpha(QuayTheme.text, 0.10)
+        opacity: 0
+        scale: 0.95
+
+        Behavior on color { ColorAnimation { duration: 220 } }
 
         focus: true
-        Keys.onEscapePressed: root.dismissed()
+        Keys.onEscapePressed: root.requestClose()
 
         RowLayout {
             anchors.fill: parent
             anchors.margins: 1
             spacing: 0
 
+            // Fixed, so the column doesn't give up width to whichever pane
+            // happens to be wider and jump as sections change.
             ColumnLayout {
                 Layout.preferredWidth: 196
+                Layout.minimumWidth: 196
+                Layout.maximumWidth: 196
                 Layout.fillHeight: true
                 Layout.margins: 16
                 spacing: 2
@@ -79,19 +131,48 @@ PanelWindow {
                     }
                 }
 
-                Repeater {
-                    model: root.sections
+                Item {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: navColumn.implicitHeight
 
-                    QuayNavRow {
-                        required property var modelData
-                        Layout.fillWidth: true
-                        glyph: modelData.glyph
-                        label: modelData.label
-                        hint: modelData.hint
-                        current: root.section === modelData.key
-                        onActivated: {
-                            sectionLoader.opacity = 0;
-                            root.section = modelData.key;
+                    Rectangle {
+                        id: navHighlight
+                        width: parent.width
+                        height: 38
+                        y: Math.max(0, root.sectionIndex) * (navHighlight.height + navColumn.spacing)
+                        radius: QuayTheme.radiusSmall
+                        color: QuayTheme.alpha(QuayTheme.accent, 0.14)
+
+                        Behavior on y { NumberAnimation { duration: 260; easing.type: Easing.OutCubic } }
+                        Behavior on color { ColorAnimation { duration: 220 } }
+
+                        Rectangle {
+                            x: 2
+                            width: 2
+                            height: 16
+                            radius: 1
+                            anchors.verticalCenter: parent.verticalCenter
+                            color: QuayTheme.accent
+                        }
+                    }
+
+                    Column {
+                        id: navColumn
+                        width: parent.width
+                        spacing: 2
+
+                        Repeater {
+                            model: root.sections
+
+                            QuayNavRow {
+                                required property var modelData
+                                width: navColumn.width
+                                glyph: modelData.glyph
+                                label: modelData.label
+                                hint: modelData.hint
+                                current: root.section === modelData.key
+                                onActivated: root.switchSection(modelData.key)
+                            }
                         }
                     }
                 }
@@ -153,7 +234,7 @@ PanelWindow {
                         }
 
                         HoverHandler { id: closeHover }
-                        TapHandler { onTapped: root.dismissed() }
+                        TapHandler { onTapped: root.requestClose() }
 
                         Accessible.role: Accessible.Button
                         Accessible.name: qsTr("Close settings")
@@ -164,16 +245,13 @@ PanelWindow {
                     id: sectionLoader
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    opacity: 0
+                    transform: Translate { id: paneShift }
                     sourceComponent: {
                         if (root.section === "appearance") return appearancePane;
                         if (root.section === "trigger") return triggerPane;
                         if (root.section === "grid") return gridPane;
                         return appsPane;
                     }
-                    onLoaded: sectionLoader.opacity = 1
-
-                    Behavior on opacity { NumberAnimation { duration: 150; easing.type: Easing.OutCubic } }
                 }
             }
         }
