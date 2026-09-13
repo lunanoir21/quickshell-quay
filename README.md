@@ -43,7 +43,8 @@ and one line.
 - **Reads at a glance.** A short mark means running, a long mark means focused,
   a number counts an app's windows, and dots on the side show the page.
 - **Live window previews.** Hold the pointer on an app with more than one window
-  to see each one and pick it directly. A plain click still cycles through them.
+  to see each one and pick it directly — beside the rail with larger thumbnails,
+  or inside it. A plain click still cycles through them.
 - **Folders by drag and drop.** Drag a tile to move it; drop it onto another to
   make a folder.
 - **Three ways to appear.** Always on screen, sliding in when the pointer reaches
@@ -166,6 +167,10 @@ are clamped, so a typo cannot leave the rail unreachable.
   "content": {
     "extras": "running",          // after pins: "pinned" (nothing) | "running" | "recent"
     "recentLimit": 4
+  },
+  "previews": {
+    "mode": "beside",             // "off" | "inside" (over the grid) | "beside" (next to the rail)
+    "delayMs": 400                // pointer dwell on a tile before previews open
   },
   "items": [
     { "type": "app", "id": "firefox", "position": 0 },

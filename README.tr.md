@@ -43,8 +43,9 @@ satır sürer.
 - **Bir bakışta okunur.** Kısa işaret çalışıyor, uzun işaret odakta demek; sayı
   bir uygulamanın pencerelerini sayar, kenardaki noktalar sayfayı gösterir.
 - **Canlı pencere önizlemesi.** Birden fazla penceresi olan bir uygulamanın
-  üzerinde imleci bekletince her pencereyi canlı görür, doğrudan birini seçersin.
-  Normal tıklama yine pencereler arasında döner.
+  üzerinde imleci bekletince her pencereyi canlı görür, doğrudan birini seçersin —
+  rayın yanında daha büyük küçük resimlerle ya da rayın içinde. Normal tıklama
+  yine pencereler arasında döner.
 - **Sürükle-bırak ile klasörler.** Bir kutucuğu taşımak için sürükle; klasör
   yapmak için başka birinin üstüne bırak.
 - **Üç görünme biçimi.** Her zaman ekranda, imleç kenara gelince kayarak ya da
@@ -167,6 +168,10 @@ boyutları sınırlar; bir yazım hatası rayı ulaşılamaz hale getiremez.
   "content": {
     "extras": "running",          // sabitlenenlerden sonra: "pinned" (hiçbir şey) | "running" | "recent"
     "recentLimit": 4
+  },
+  "previews": {
+    "mode": "beside",             // "off" | "inside" (ızgaranın üstünde) | "beside" (rayın yanında)
+    "delayMs": 400                // önizleme açılmadan önce imlecin kutucukta bekleme süresi
   },
   "items": [
     { "type": "app", "id": "firefox", "position": 0 },
