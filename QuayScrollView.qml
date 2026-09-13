@@ -34,6 +34,8 @@ Item {
     // hide under it, and a drag reports no hover to tell it so.
     property bool fileDragActive: false
 
+    signal menuRequested(var entry, point anchor)
+
     property int dragIndex: -1
     property int dropIndex: -1
     property bool dropAsFolder: false
@@ -150,10 +152,14 @@ Item {
 
             onActivated: id => QuayModel.activate(id)
             onFolderToggled: id => root.openFolder(id)
-            onPinToggled: id => QuayModel.togglePin(id)
             onNewWindowRequested: id => QuayModel.launchNew(id)
             onFilesDropped: (id, urls) => QuayModel.openFiles(id, urls)
             onFileHoverChanged: root.fileDragActive = tileDelegate.fileHover
+            onMenuRequested: (entry, anchor) => {
+                root.closeFolder();
+                root.hidePreview();
+                root.menuRequested(entry, anchor);
+            }
 
             onDragStarted: index => {
                 root.dragIndex = index;

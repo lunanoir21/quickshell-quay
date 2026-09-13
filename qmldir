@@ -5,6 +5,7 @@ singleton QuayTheme 1.0 QuayTheme.qml
 singleton QuayWindows 1.0 QuayWindows.qml
 
 Quay 1.0 Quay.qml
+QuayContextMenu 1.0 QuayContextMenu.qml
 QuayFolderPopover 1.0 QuayFolderPopover.qml
 QuayHost 1.0 QuayHost.qml
 QuayIconDelegate 1.0 QuayIconDelegate.qml

@@ -18,14 +18,14 @@ Item {
 
     signal activated(string id)
     signal folderToggled(string id)
-    signal pinToggled(string id)
     signal newWindowRequested(string id)
     signal filesDropped(string id, var urls)
     signal dragStarted(int index)
     signal dragMoved(int index, point scenePoint)
     signal dragFinished(int index)
-    // `anchor` is the tile centre in scene coordinates, so a preview placed
-    // beside the rail can line up with the tile it belongs to.
+    // `anchor` is the tile centre in scene coordinates, so a menu or preview
+    // placed beside the rail can line up with the tile it belongs to.
+    signal menuRequested(var entry, point anchor)
     signal previewRequested(string id, point anchor)
 
     width: root.cellSize
@@ -227,7 +227,7 @@ Item {
 
     TapHandler {
         acceptedButtons: Qt.RightButton
-        onTapped: if (!root.isFolder) root.pinToggled(root.entry.id)
+        onTapped: root.menuRequested(root.entry, root.sceneCentre())
     }
 
     // Files dropped on an app open with it.

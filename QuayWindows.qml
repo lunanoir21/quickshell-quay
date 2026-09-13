@@ -69,6 +69,13 @@ Singleton {
         return group ? group.windows.length : 0;
     }
 
+    function closeAll(desktopId) {
+        let group = root.groupFor(desktopId);
+        if (!group) return;
+        let windows = group.windows.slice();
+        for (let i = 0; i < windows.length; i++) windows[i].close();
+    }
+
     // Repeated activation cycles through that app's windows instead of always
     // raising the same one.
     function focus(desktopId) {

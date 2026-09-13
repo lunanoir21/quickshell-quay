@@ -88,7 +88,7 @@ Singleton {
             "key": "folder:" + item.id,
             "type": "folder",
             "id": item.id,
-            "name": item.name || "Klasör",
+            "name": item.name || qsTr("Folder"),
             "iconSource": "",
             "isPinned": true,
             "isRunning": running,
@@ -266,10 +266,55 @@ Singleton {
             items[targetIndex] = {
                 "type": "folder",
                 "id": root.newFolderId(),
-                "name": "Yeni klasör",
+                "name": qsTr("New folder"),
                 "children": [{ "type": "app", "id": target.id }, { "type": "app", "id": source.id }]
             };
             items.splice(sourceIndex, 1);
+        }
+        root.commit(items);
+    }
+
+    readonly property var folders: root.pinnedItems.filter(item => item.type === "folder")
+
+    function folderOf(id) {
+        let wanted = String(id).toLowerCase();
+        let found = root.folders.find(folder => (folder.children || [])
+            .some(child => String(child.id).toLowerCase() === wanted));
+        return found ? found.id : "";
+    }
+
+    // Moves an app into a folder from wherever it is: the top level, another
+    // folder, or not pinned at all. An empty folderId makes a new folder in
+    // the app's place (or at the end, if it had no place of its own).
+    function moveToFolder(id, folderId) {
+        let wanted = String(id).toLowerCase();
+        let member = { "type": "app", "id": id };
+        let items = [];
+        let placed = false;
+        let source = root.pinnedItems;
+
+        for (let i = 0; i < source.length; i++) {
+            let item = source[i];
+            if (item.type === "folder") {
+                let kept = (item.children || []).filter(child => String(child.id).toLowerCase() !== wanted);
+                if (folderId && item.id === folderId) {
+                    kept.push(member);
+                    placed = true;
+                }
+                if (kept.length > 0) items.push({ "type": "folder", "id": item.id, "name": item.name, "children": kept });
+            } else if (String(item.id).toLowerCase() === wanted) {
+                if (!folderId) {
+                    items.push({ "type": "folder", "id": root.newFolderId(), "name": qsTr("New folder"), "children": [member] });
+                    placed = true;
+                }
+            } else {
+                items.push(item);
+            }
+        }
+
+        if (!placed) {
+            if (folderId) return;
+            items.push({ "type": "folder", "id": root.newFolderId(), "name": qsTr("New folder"), "children": [member] });
         }
         root.commit(items);
     }

@@ -68,6 +68,7 @@ PanelWindow {
         if (root.shown) return;
         grid.closeFolder();
         grid.hidePreview();
+        root.menuEntry = null;
     }
 
     Connections {
@@ -158,6 +159,39 @@ PanelWindow {
         }
     }
 
+    // --- context menu --------------------------------------------------------
+
+    property var menuEntry: null
+    property point menuAnchor: Qt.point(0, 0)
+    readonly property bool menuOpen: root.menuEntry !== null
+
+    // The menu's surface covers the rail, which reads to the rail as the
+    // pointer leaving; it stays out until the menu is gone.
+    function openMenu(entry, anchor) {
+        root.menuAnchor = anchor;
+        root.menuEntry = entry;
+        hideTimer.stop();
+    }
+
+    function closeMenu() {
+        root.menuEntry = null;
+        if (QuayStore.triggerMode === "hover" && !railHover.hovered) hideTimer.restart();
+    }
+
+    Loader {
+        active: root.menuOpen
+
+        sourceComponent: QuayContextMenu {
+            quayScreen: root.screen
+            railThickness: root.railThickness
+            railLength: root.railLength
+            entry: root.menuEntry
+            anchorPoint: root.menuAnchor
+            onFolderRequested: id => grid.openFolder(id)
+            onDismissed: root.closeMenu()
+        }
+    }
+
     // --- reveal --------------------------------------------------------------
 
     Item {
@@ -202,7 +236,7 @@ PanelWindow {
         interval: QuayStore.hoverHideDelayMs
         onTriggered: {
             if (QuayStore.triggerMode !== "hover") return;
-            if (grid.fileDragActive || railDrop.containsDrag) return;
+            if (root.menuOpen || grid.fileDragActive || railDrop.containsDrag) return;
             root.revealed = false;
         }
     }
@@ -246,7 +280,7 @@ PanelWindow {
                 if (railHover.hovered) {
                     hideTimer.stop();
                     root.revealed = true;
-                } else {
+                } else if (!root.menuOpen) {
                     hideTimer.restart();
                 }
             }
@@ -265,6 +299,7 @@ PanelWindow {
             anchors.fill: parent
             anchors.margins: root.padding
             interactive: root.shown
+            onMenuRequested: (entry, anchor) => root.openMenu(entry, anchor)
         }
     }
 }
