@@ -379,6 +379,20 @@ PanelWindow {
             }
 
             QuaySettingRow {
+                label: qsTr("Over fullscreen")
+                hint: qsTr("Keeps the rail out of games and videos")
+
+                QuaySegmented {
+                    options: [
+                        { value: true, label: qsTr("Hide") },
+                        { value: false, label: qsTr("Stay") }
+                    ]
+                    currentValue: QuayStore.hideOnFullscreen
+                    onPicked: value => QuayStore.setOption("trigger.hideOnFullscreen", value)
+                }
+            }
+
+            QuaySettingRow {
                 label: qsTr("Reveal delay")
                 hint: qsTr("Pointer dwell before it slides in")
                 enabled: QuayStore.triggerMode === "hover"

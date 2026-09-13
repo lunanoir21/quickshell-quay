@@ -27,6 +27,22 @@ PanelWindow {
     property bool revealed: QuayStore.triggerMode === "always"
     property bool shortcutOpen: false
 
+    // A focused fullscreen window on this screen (a game, a video) puts the
+    // rail away in every mode and takes the hot edge with it, without
+    // touching what `revealed` will be once fullscreen ends.
+    readonly property bool fullscreenHere: {
+        let toplevel = QuayWindows.activeToplevel;
+        if (!toplevel || !toplevel.fullscreen) return false;
+        let screens = toplevel.screens || [];
+        if (screens.length === 0) return true;
+        for (let i = 0; i < screens.length; i++) {
+            if (screens[i] && screens[i].name === root.screen.name) return true;
+        }
+        return false;
+    }
+    readonly property bool suppressed: QuayStore.hideOnFullscreen && root.fullscreenHere
+    readonly property bool shown: root.revealed && !root.suppressed
+
     WlrLayershell.namespace: "quay"
     WlrLayershell.layer: WlrLayer.Top
     color: "transparent"
@@ -44,10 +60,12 @@ PanelWindow {
     // Never reserve space: Quay floats over whatever is on screen, so windows
     // are not resized when it appears.
     exclusiveZone: 0
-    mask: Region { item: root.revealed ? rail : hotEdgeArea }
+    mask: Region { item: root.shown ? rail : (root.suppressed ? nothing : hotEdgeArea) }
 
-    onRevealedChanged: {
-        if (root.revealed) return;
+    Item { id: nothing }
+
+    onShownChanged: {
+        if (root.shown) return;
         grid.closeFolder();
         grid.hidePreview();
     }
@@ -91,8 +109,21 @@ PanelWindow {
         else if (settingsLoader.status === Loader.Ready) settingsLoader.item.requestClose();
     }
 
+    Loader {
+        id: settingsLoader
+        active: false
+        asynchronous: true
+
+        sourceComponent: QuaySettingsPanel {
+            quayScreen: root.screen
+            onDismissed: settingsLoader.active = false
+        }
+    }
+
+    // --- window previews beside the rail -------------------------------------
+
     readonly property bool previewBeside: QuayStore.previewMode === "beside"
-        && root.revealed && grid.previewId !== ""
+        && root.shown && grid.previewId !== ""
 
     // Kept loaded a moment after closing so the popout can fade out.
     onPreviewBesideChanged: if (!root.previewBeside) previewLinger.restart()
@@ -127,16 +158,7 @@ PanelWindow {
         }
     }
 
-    Loader {
-        id: settingsLoader
-        active: false
-        asynchronous: true
-
-        sourceComponent: QuaySettingsPanel {
-            quayScreen: root.screen
-            onDismissed: settingsLoader.active = false
-        }
-    }
+    // --- reveal --------------------------------------------------------------
 
     Item {
         id: hotEdgeArea
@@ -152,7 +174,7 @@ PanelWindow {
 
         HoverHandler {
             id: edgeHover
-            enabled: QuayStore.triggerMode === "hover"
+            enabled: QuayStore.triggerMode === "hover" && !root.suppressed
             onHoveredChanged: {
                 if (edgeHover.hovered) revealTimer.restart();
                 else revealTimer.stop();
@@ -186,14 +208,14 @@ PanelWindow {
         // only the hot edge remains on screen.
         x: root.vertical
             ? (QuayStore.triggerEdge === "right"
-                ? (root.revealed ? root.hotEdge : root.width)
-                : (root.revealed ? 0 : -root.railThickness))
+                ? (root.shown ? root.hotEdge : root.width)
+                : (root.shown ? 0 : -root.railThickness))
             : 0
         y: root.vertical
             ? 0
             : (QuayStore.triggerEdge === "bottom"
-                ? (root.revealed ? root.hotEdge : root.height)
-                : (root.revealed ? 0 : -root.railThickness))
+                ? (root.shown ? root.hotEdge : root.height)
+                : (root.shown ? 0 : -root.railThickness))
 
         width: root.vertical ? root.railThickness : root.width
         height: root.vertical ? root.height : root.railThickness
@@ -221,7 +243,7 @@ PanelWindow {
             id: grid
             anchors.fill: parent
             anchors.margins: root.padding
-            interactive: root.revealed
+            interactive: root.shown
         }
     }
 }

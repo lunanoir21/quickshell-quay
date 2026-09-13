@@ -20,7 +20,8 @@ defaults() {
     "mode": "hover",
     "edge": "right",
     "hoverRevealDelayMs": 90,
-    "hoverHideDelayMs": 400
+    "hoverHideDelayMs": 400,
+    "hideOnFullscreen": true
   },
   "layout": {
     "columns": 1,
@@ -42,7 +43,7 @@ defaults() {
 JSON
 }
 
-option_paths='["appearance.theme","trigger.mode","trigger.edge","trigger.hoverRevealDelayMs","trigger.hoverHideDelayMs","layout.columns","layout.rows","layout.iconSize","layout.spacing","content.extras","content.recentLimit","previews.mode","previews.delayMs"]'
+option_paths='["appearance.theme","trigger.mode","trigger.edge","trigger.hoverRevealDelayMs","trigger.hoverHideDelayMs","trigger.hideOnFullscreen","layout.columns","layout.rows","layout.iconSize","layout.spacing","content.extras","content.recentLimit","previews.mode","previews.delayMs"]'
 
 _lock_held=0
 with_lock() {

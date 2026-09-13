@@ -25,6 +25,7 @@ Singleton {
     property string triggerEdge: "right"      // left | right | top | bottom
     property int hoverRevealDelayMs: 90
     property int hoverHideDelayMs: 400
+    property bool hideOnFullscreen: true
 
     property int columns: 1
     property int rows: 6
@@ -102,6 +103,7 @@ Singleton {
         if (root._edges.indexOf(trigger.edge) !== -1) root.triggerEdge = trigger.edge;
         if (typeof trigger.hoverRevealDelayMs === "number") root.hoverRevealDelayMs = Math.max(0, trigger.hoverRevealDelayMs);
         if (typeof trigger.hoverHideDelayMs === "number") root.hoverHideDelayMs = Math.max(0, trigger.hoverHideDelayMs);
+        if (typeof trigger.hideOnFullscreen === "boolean") root.hideOnFullscreen = trigger.hideOnFullscreen;
 
         let layout = parsed.layout || {};
         if (typeof layout.columns === "number") root.columns = Math.max(1, layout.columns);
