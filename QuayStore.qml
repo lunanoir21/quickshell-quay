@@ -9,7 +9,13 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    readonly property string moduleDir: Qt.resolvedUrl(".").toString().replace(/^file:\/\//, "")
+    // Qt.resolvedUrl(".") ends in a slash when Quay is imported from a host
+    // shell but not when it is the config root (quickshell -p Main.qml), and
+    // it percent-encodes spaces; both would break every script path below.
+    readonly property string moduleDir: {
+        let dir = decodeURIComponent(Qt.resolvedUrl(".").toString().replace(/^file:\/\//, ""));
+        return dir.endsWith("/") ? dir : dir + "/";
+    }
     readonly property string storeScript: root.moduleDir + "scripts/quay_store.sh"
 
     readonly property string settingsPath: {
