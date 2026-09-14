@@ -11,6 +11,15 @@ web sitesine kopyalar.
 
 ## [Yayınlanmadı]
 
+### Değişenler
+
+- **Toggle artık Hover modunda da çalışıyor.** IPC toggle/show/hide
+  (örneğin bir kısayol) daha önce Shortcut modu dışında hiçbir şey
+  yapmıyordu. Artık Always dışında her modda çalışıyor — Always'de rail'i
+  geri getirecek hiçbir tetikleyici kalmıyor. Hover modunda bu, sıcak kenara
+  ek bir manuel geçiş gibi davranıyor; rail'in üzerine gelip çekilmek yine
+  normal hover zamanlayıcılarıyla kapatıyor.
+
 ### Düzeltilenler
 
 - **Segmented ayarlar** (tema, trigger modu/kenarı, tam ekran davranışı,

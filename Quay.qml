@@ -25,7 +25,6 @@ PanelWindow {
     // The surface always occupies its full expanded size; `mask` is what makes
     // the collapsed state click-through, so revealing needs no reconfigure.
     property bool revealed: QuayStore.triggerMode === "always"
-    property bool shortcutOpen: false
 
     // A focused fullscreen window on this screen (a game, a video) puts the
     // rail away in every mode and takes the hot edge with it, without
@@ -74,34 +73,33 @@ PanelWindow {
     Connections {
         target: QuayStore
         function onTriggerModeChanged() {
-            root.shortcutOpen = false;
             // Disabling a HoverHandler doesn't fire onHoveredChanged, so a
             // reveal/hide already in flight from the old mode would otherwise
-            // land after the switch and desync `revealed` from `shortcutOpen`.
+            // land after the switch.
             revealTimer.stop();
             hideTimer.stop();
             root.revealed = QuayStore.triggerMode === "always";
         }
     }
 
+    // A manual toggle/show/hide (IPC, a keybind) works in every mode except
+    // "always" — there, nothing is left to bring the rail back once it's
+    // toggled shut, since neither hover nor a shortcut trigger is active. In
+    // "hover", this is a manual override alongside the hot edge: hovering the
+    // now-visible rail and moving away still hides it through the normal
+    // hover timers, since those key off `triggerMode` alone, not how
+    // `revealed` last changed.
     function toggle() {
-        if (QuayStore.triggerMode !== "shortcut") return;
-        root.shortcutOpen = !root.shortcutOpen;
-        root.revealed = root.shortcutOpen;
+        if (QuayStore.triggerMode === "always") return;
+        root.revealed = !root.revealed;
     }
 
     function show() {
-        if (QuayStore.triggerMode === "shortcut") {
-            root.shortcutOpen = true;
-            root.revealed = true;
-        }
+        if (QuayStore.triggerMode !== "always") root.revealed = true;
     }
 
     function hide() {
-        if (QuayStore.triggerMode === "shortcut") {
-            root.shortcutOpen = false;
-            root.revealed = false;
-        }
+        if (QuayStore.triggerMode !== "always") root.revealed = false;
     }
 
     // The panel plays its own closing animation before it asks to be unloaded.

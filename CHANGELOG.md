@@ -10,6 +10,14 @@ the READMEs and every release onto the website.
 
 ## [Unreleased]
 
+### Changed
+
+- **Toggle works in Hover mode too.** The IPC toggle/show/hide (a keybind,
+  for instance) used to no-op outside Shortcut mode. Now it works in every
+  mode except Always, where nothing would bring the rail back — in Hover, it
+  acts as a manual override alongside the hot edge; hovering the rail and
+  moving away still hides it normally.
+
 ### Fixed
 
 - **Segmented settings** (theme, trigger mode/edge, fullscreen behaviour,
