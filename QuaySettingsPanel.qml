@@ -276,7 +276,7 @@ PanelWindow {
                         { value: "auto", label: qsTr("System") }
                     ]
                     currentValue: QuayStore.theme
-                    onPicked: value => QuayStore.setOption("appearance.theme", value)
+                    onPicked: value => { QuayStore.theme = value; QuayStore.setOption("appearance.theme", value); }
                 }
             }
 
@@ -359,7 +359,7 @@ PanelWindow {
                         { value: "shortcut", label: qsTr("Shortcut") }
                     ]
                     currentValue: QuayStore.triggerMode
-                    onPicked: value => QuayStore.setOption("trigger.mode", value)
+                    onPicked: value => { QuayStore.triggerMode = value; QuayStore.setOption("trigger.mode", value); }
                 }
             }
 
@@ -374,7 +374,7 @@ PanelWindow {
                         { value: "bottom", label: qsTr("Bottom") }
                     ]
                     currentValue: QuayStore.triggerEdge
-                    onPicked: value => QuayStore.setOption("trigger.edge", value)
+                    onPicked: value => { QuayStore.triggerEdge = value; QuayStore.setOption("trigger.edge", value); }
                 }
             }
 
@@ -388,7 +388,7 @@ PanelWindow {
                         { value: false, label: qsTr("Stay") }
                     ]
                     currentValue: QuayStore.hideOnFullscreen
-                    onPicked: value => QuayStore.setOption("trigger.hideOnFullscreen", value)
+                    onPicked: value => { QuayStore.hideOnFullscreen = value; QuayStore.setOption("trigger.hideOnFullscreen", value); }
                 }
             }
 
@@ -629,7 +629,7 @@ PanelWindow {
                         { value: "beside", label: qsTr("Beside the rail") }
                     ]
                     currentValue: QuayStore.previewMode
-                    onPicked: value => QuayStore.setOption("previews.mode", value)
+                    onPicked: value => { QuayStore.previewMode = value; QuayStore.setOption("previews.mode", value); }
                 }
             }
 
@@ -786,7 +786,7 @@ PanelWindow {
                         { value: "recent", label: qsTr("Recently used") }
                     ]
                     currentValue: QuayStore.extras
-                    onPicked: value => QuayStore.setOption("content.extras", value)
+                    onPicked: value => { QuayStore.extras = value; QuayStore.setOption("content.extras", value); }
                 }
             }
 

@@ -8,6 +8,18 @@ This file and [CHANGELOG.tr.md](CHANGELOG.tr.md) are the only places to write
 release notes. `python3 scripts/changelog.py` copies the latest release into
 the READMEs and every release onto the website.
 
+## [Unreleased]
+
+### Fixed
+
+- **Segmented settings** (theme, trigger mode/edge, fullscreen behaviour,
+  window previews, extras) now apply immediately instead of waiting on the
+  settings-file round trip. Whenever that round trip fails — `jq` missing, no
+  write access, no filesystem watch support — the buttons looked completely
+  dead, while sliders kept working because they already updated in memory
+  first. This also unblocks Shortcut trigger mode's own bind-line panel,
+  which was unreachable when the Mode selector couldn't be changed.
+
 ## [1.1.1] - 2026-09-13
 
 ### Fixed

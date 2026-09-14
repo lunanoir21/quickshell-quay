@@ -9,6 +9,20 @@ Sürüm notları yalnızca bu dosyaya ve [CHANGELOG.md](CHANGELOG.md) dosyasına
 yazılır. `python3 scripts/changelog.py` son sürümü README'lere, tüm sürümleri
 web sitesine kopyalar.
 
+## [Yayınlanmadı]
+
+### Düzeltilenler
+
+- **Segmented ayarlar** (tema, trigger modu/kenarı, tam ekran davranışı,
+  pencere önizlemeleri, ekstralar) artık ayar dosyası round-trip'ini
+  beklemeden hemen uygulanıyor. Bu round-trip herhangi bir sebeple
+  başarısız olduğunda (`jq` eksik, yazma izni yok, dosya sistemi izleme
+  desteklenmiyor) butonlar tamamen ölü görünüyordu; kaydırıcılar ise önce
+  bellekte güncellediği için çalışmaya devam ediyordu. Bu düzeltme aynı
+  zamanda Shortcut trigger modunun kendi bind-satırı panelini de açığa
+  çıkarıyor — Mode seçici değiştirilemediği için o panel hiç
+  ulaşılamıyordu.
+
 ## [1.1.1] - 2026-09-13
 
 ### Düzeltilenler
