@@ -22,10 +22,21 @@ web sitesine kopyalar.
 
 ### Düzeltilenler
 
+- **Manuel kapatmanın Hover moduyla çakışması.** İmleç hâlâ sıcak kenarın
+  ya da rail'in üzerindeyken kısayolla rail'i kapatmak, aynı imleç
+  konumu yüzünden bir reveal delay içinde tekrar açılmasına sebep
+  oluyordu — sanki ilk rail kapanacağına ikinci bir tane beliriyormuş gibi
+  görünüyordu. Manuel kapatma/toggle artık imleç gerçekten ayrılana kadar
+  hover açılışlarını durduruyor.
 - **Kaçırılan hover açılışları.** Sıcak kenar 6px'ti — imleç hızlı
   vardığında, ekran sınırında tam durduğu an o kadar ince bir şeridin
   içine bir hareket olayı hiç denk gelmeyebiliyordu, bu yüzden rail ara
   sıra hiç açılmıyordu. 12px'e genişletildi.
+- **Segmented butonların tıklamayı algılamaması.** Tema, trigger modu gibi
+  pill tarzı seçenekler `TapHandler` kullanıyordu; bu, bırakma noktası
+  sınırların dışına düşerse tap'i iptal ediyor — 22px yüksekliğindeki bir
+  hedefte bazı pointer/ölçekleme kurulumlarında kolayca oluyor. Kaydırıcıların
+  zaten kullandığı yöntemle, paddingli bir `MouseArea`'ya geçildi.
 - **Segmented ayarlar** (tema, trigger modu/kenarı, tam ekran davranışı,
   pencere önizlemeleri, ekstralar) artık ayar dosyası round-trip'ini
   beklemeden hemen uygulanıyor. Bu round-trip herhangi bir sebeple

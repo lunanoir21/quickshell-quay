@@ -20,10 +20,20 @@ the READMEs and every release onto the website.
 
 ### Fixed
 
+- **Manual hide fighting Hover mode.** Toggling the rail shut with a keybind
+  while the pointer was still over the hot edge or the rail got reopened by
+  that same pointer position within one reveal delay — it looked like a
+  second rail appearing instead of the first one closing. A manual
+  hide/toggle now holds hover reveals off until the pointer actually leaves.
 - **Missed hover reveals.** The hot edge was 6px — a pointer arriving fast
   could stop right at the screen boundary without a motion event ever
   landing inside a strip that thin, so the rail occasionally just didn't
   come up. Widened to 12px.
+- **Segmented buttons not registering clicks.** Theme, trigger mode, and
+  other pill-style choices used `TapHandler`, which cancels a tap whose
+  release lands outside its bounds — easy to hit on a 22px-tall target under
+  some pointer/scaling setups. Switched to a padded `MouseArea`, the same
+  approach already used by the sliders.
 - **Segmented settings** (theme, trigger mode/edge, fullscreen behaviour,
   window previews, extras) now apply immediately instead of waiting on the
   settings-file round trip. Whenever that round trip fails — `jq` missing, no

@@ -29,6 +29,15 @@ PanelWindow {
     // the collapsed state click-through, so revealing needs no reconfigure.
     property bool revealed: QuayStore.triggerMode === "always"
 
+    // A manual hide in Hover mode while the pointer is still sitting over the
+    // hot edge or the rail would otherwise be undone within one
+    // hoverRevealDelayMs — the same pointer position that's still there reads
+    // as a fresh hover-in. This holds reveals off until the pointer actually
+    // leaves both regions.
+    property bool hoverSuppressed: false
+    readonly property bool pointerNearRail: edgeHover.hovered || railHover.hovered
+    onPointerNearRailChanged: if (!root.pointerNearRail) root.hoverSuppressed = false
+
     // A focused fullscreen window on this screen (a game, a video) puts the
     // rail away in every mode and takes the hot edge with it, without
     // touching what `revealed` will be once fullscreen ends.
@@ -81,6 +90,7 @@ PanelWindow {
             // land after the switch.
             revealTimer.stop();
             hideTimer.stop();
+            root.hoverSuppressed = false;
             root.revealed = QuayStore.triggerMode === "always";
         }
     }
@@ -91,9 +101,12 @@ PanelWindow {
     // "hover", this is a manual override alongside the hot edge: hovering the
     // now-visible rail and moving away still hides it through the normal
     // hover timers, since those key off `triggerMode` alone, not how
-    // `revealed` last changed.
+    // `revealed` last changed. Closing while still hovering arms
+    // `hoverSuppressed` so the hot edge doesn't immediately reopen it out
+    // from under the same pointer position.
     function toggle() {
         if (QuayStore.triggerMode === "always") return;
+        if (root.revealed && QuayStore.triggerMode === "hover") root.hoverSuppressed = true;
         root.revealed = !root.revealed;
     }
 
@@ -102,7 +115,9 @@ PanelWindow {
     }
 
     function hide() {
-        if (QuayStore.triggerMode !== "always") root.revealed = false;
+        if (QuayStore.triggerMode === "always") return;
+        if (QuayStore.triggerMode === "hover") root.hoverSuppressed = true;
+        root.revealed = false;
     }
 
     // The panel plays its own closing animation before it asks to be unloaded.
@@ -229,7 +244,7 @@ PanelWindow {
     Timer {
         id: revealTimer
         interval: QuayStore.hoverRevealDelayMs
-        onTriggered: if (QuayStore.triggerMode === "hover") root.revealed = true
+        onTriggered: if (QuayStore.triggerMode === "hover" && !root.hoverSuppressed) root.revealed = true
     }
 
     Timer {

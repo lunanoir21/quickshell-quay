@@ -93,7 +93,17 @@ Item {
                 }
 
                 HoverHandler { id: segmentHover }
-                TapHandler { onTapped: root.picked(segment.modelData.value) }
+
+                // A MouseArea, not TapHandler: segments are small (22px tall)
+                // and TapHandler cancels a tap whose release lands outside its
+                // bounds by even a pixel, which some pointer/scaling setups hit
+                // often enough that clicks here just stopped registering. The
+                // extra margin gives a release near the edge some room too.
+                MouseArea {
+                    anchors.fill: parent
+                    anchors.margins: -4
+                    onClicked: root.picked(segment.modelData.value)
+                }
 
                 Accessible.role: Accessible.RadioButton
                 Accessible.name: segment.modelData.label
