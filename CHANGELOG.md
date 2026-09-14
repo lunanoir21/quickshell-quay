@@ -20,6 +20,10 @@ the READMEs and every release onto the website.
 
 ### Fixed
 
+- **Missed hover reveals.** The hot edge was 6px — a pointer arriving fast
+  could stop right at the screen boundary without a motion event ever
+  landing inside a strip that thin, so the rail occasionally just didn't
+  come up. Widened to 12px.
 - **Segmented settings** (theme, trigger mode/edge, fullscreen behaviour,
   window previews, extras) now apply immediately instead of waiting on the
   settings-file round trip. Whenever that round trip fails — `jq` missing, no

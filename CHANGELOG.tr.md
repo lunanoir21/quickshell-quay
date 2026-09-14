@@ -22,6 +22,10 @@ web sitesine kopyalar.
 
 ### Düzeltilenler
 
+- **Kaçırılan hover açılışları.** Sıcak kenar 6px'ti — imleç hızlı
+  vardığında, ekran sınırında tam durduğu an o kadar ince bir şeridin
+  içine bir hareket olayı hiç denk gelmeyebiliyordu, bu yüzden rail ara
+  sıra hiç açılmıyordu. 12px'e genişletildi.
 - **Segmented ayarlar** (tema, trigger modu/kenarı, tam ekran davranışı,
   pencere önizlemeleri, ekstralar) artık ayar dosyası round-trip'ini
   beklemeden hemen uygulanıyor. Bu round-trip herhangi bir sebeple

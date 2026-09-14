@@ -13,7 +13,10 @@ PanelWindow {
     screen: root.modelData
 
     readonly property bool vertical: QuayStore.vertical
-    readonly property int hotEdge: 6
+    // Wide enough that a pointer arriving fast still lands a motion event
+    // inside the strip before the compositor stops it at the screen edge —
+    // 6px missed that often enough to read as "hover just doesn't work".
+    readonly property int hotEdge: 12
     readonly property int padding: 10
 
     readonly property int cell: QuayStore.iconSize + QuayStore.spacing
