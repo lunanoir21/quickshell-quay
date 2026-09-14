@@ -8,7 +8,14 @@ This file and [CHANGELOG.tr.md](CHANGELOG.tr.md) are the only places to write
 release notes. `python3 scripts/changelog.py` copies the latest release into
 the READMEs and every release onto the website.
 
-## [Unreleased]
+## [1.1.2] - 2026-09-15
+
+### Added
+
+- **Available as an Omarchy plugin.** [quay-omarchy](https://github.com/lunanoir21/quay-omarchy)
+  packages Quay for Omarchy's plugin marketplace as a `service`, alongside
+  the same built-ins as `background`, `lock`, and `notifications`:
+  `omarchy plugin add https://github.com/lunanoir21/quay-omarchy.git --enable`.
 
 ### Changed
 

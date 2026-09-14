@@ -9,7 +9,14 @@ Sürüm notları yalnızca bu dosyaya ve [CHANGELOG.md](CHANGELOG.md) dosyasına
 yazılır. `python3 scripts/changelog.py` son sürümü README'lere, tüm sürümleri
 web sitesine kopyalar.
 
-## [Yayınlanmadı]
+## [1.1.2] - 2026-09-15
+
+### Eklenenler
+
+- **Omarchy eklentisi olarak mevcut.** [quay-omarchy](https://github.com/lunanoir21/quay-omarchy),
+  Quay'i Omarchy'nin eklenti pazarı için `background`, `lock` ve
+  `notifications` gibi built-in'lerle aynı şekilde bir `service` olarak
+  paketliyor: `omarchy plugin add https://github.com/lunanoir21/quay-omarchy.git --enable`.
 
 ### Değişenler
 

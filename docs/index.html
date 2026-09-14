@@ -822,7 +822,7 @@ h3 { margin: 56px 0 18px; font: 700 14px/1.4 var(--mono); color: var(--ink); }
   <span class="top-mark">Quay</span>
   <span class="top-meta">For Quickshell · wlr-layer-shell</span>
   <!-- changelog:site-link:start -->
-  <a class="top-link" href="#changelog">What's new in 1.1.1</a>
+  <a class="top-link" href="#changelog">What's new in 1.1.2</a>
   <!-- changelog:site-link:end -->
   <a class="top-link" href="https://github.com/lunanoir21/quickshell-quay">Source on GitHub</a>
 </header>
@@ -1027,11 +1027,40 @@ ShellRoot {
     <h2 id="changelog-title">Changelog</h2>
     <p class="section-lede">Every release, newest first. The same notes live in <a href="https://github.com/lunanoir21/quickshell-quay/blob/main/CHANGELOG.md">CHANGELOG.md</a>.</p>
     <div class="releases">
-      <article class="release is-latest" id="v1-1-1">
+      <article class="release is-latest" id="v1-1-2">
+        <header class="release-head">
+          <h3>1.1.2</h3>
+          <time datetime="2026-09-15">2026-09-15</time>
+          <span class="release-tag">Latest</span>
+        </header>
+        <div class="release-body">
+          <div class="release-group">
+            <p class="release-kind">Added</p>
+            <ul class="changes">
+              <li><strong>Available as an Omarchy plugin.</strong> <a href="https://github.com/lunanoir21/quay-omarchy">quay-omarchy</a> packages Quay for Omarchy's plugin marketplace as a <code>service</code>, alongside the same built-ins as <code>background</code>, <code>lock</code>, and <code>notifications</code>: <code>omarchy plugin add https://github.com/lunanoir21/quay-omarchy.git --enable</code>.</li>
+            </ul>
+          </div>
+          <div class="release-group">
+            <p class="release-kind">Changed</p>
+            <ul class="changes">
+              <li><strong>Toggle works in Hover mode too.</strong> The IPC toggle/show/hide (a keybind, for instance) used to no-op outside Shortcut mode. Now it works in every mode except Always, where nothing would bring the rail back — in Hover, it acts as a manual override alongside the hot edge; hovering the rail and moving away still hides it normally.</li>
+            </ul>
+          </div>
+          <div class="release-group">
+            <p class="release-kind">Fixed</p>
+            <ul class="changes">
+              <li><strong>Manual hide fighting Hover mode.</strong> Toggling the rail shut with a keybind while the pointer was still over the hot edge or the rail got reopened by that same pointer position within one reveal delay — it looked like a second rail appearing instead of the first one closing. A manual hide/toggle now holds hover reveals off until the pointer actually leaves.</li>
+              <li><strong>Missed hover reveals.</strong> The hot edge was 6px — a pointer arriving fast could stop right at the screen boundary without a motion event ever landing inside a strip that thin, so the rail occasionally just didn't come up. Widened to 12px.</li>
+              <li><strong>Segmented buttons not registering clicks.</strong> Theme, trigger mode, and other pill-style choices used <code>TapHandler</code>, which cancels a tap whose release lands outside its bounds — easy to hit on a 22px-tall target under some pointer/scaling setups. Switched to a padded <code>MouseArea</code>, the same approach already used by the sliders.</li>
+              <li><strong>Segmented settings</strong> (theme, trigger mode/edge, fullscreen behaviour, window previews, extras) now apply immediately instead of waiting on the settings-file round trip. Whenever that round trip fails — <code>jq</code> missing, no write access, no filesystem watch support — the buttons looked completely dead, while sliders kept working because they already updated in memory first. This also unblocks Shortcut trigger mode's own bind-line panel, which was unreachable when the Mode selector couldn't be changed.</li>
+            </ul>
+          </div>
+        </div>
+      </article>
+      <article class="release" id="v1-1-1">
         <header class="release-head">
           <h3>1.1.1</h3>
           <time datetime="2026-09-13">2026-09-13</time>
-          <span class="release-tag">Latest</span>
         </header>
         <div class="release-body">
           <div class="release-group">

@@ -35,18 +35,24 @@ settings panel, its own app index. Vendoring it into a shell takes one import
 and one line.
 
 <!-- changelog:readme:start -->
-## What's new in 1.1.1
+## What's new in 1.1.2
 
-_Released 2026-09-13 · [Full changelog](CHANGELOG.md)_
+_Released 2026-09-15 · [Full changelog](CHANGELOG.md)_
 
-**Fixed**
+**Added**
 
-- **Standalone installs.** Run as its own config (`quickshell -p Main.qml`), Quay built its script paths without a separator, so settings were never read or saved and no apps were found. Install paths with spaces work too.
-- **Terminal apps** (`Terminal=true`, such as btop or Vim) open in a terminal: `$TERMINAL`, then `xdg-terminal-exec`, then the first common terminal installed. Before, nothing appeared.
+- **Available as an Omarchy plugin.** [quay-omarchy](https://github.com/lunanoir21/quay-omarchy) packages Quay for Omarchy's plugin marketplace as a `service`, alongside the same built-ins as `background`, `lock`, and `notifications`: `omarchy plugin add https://github.com/lunanoir21/quay-omarchy.git --enable`.
 
 **Changed**
 
-- The READMEs list what Quay needs from the compositor, that window previews are Hyprland-only with Quickshell 0.3, and that the interface icons come from a Nerd Font.
+- **Toggle works in Hover mode too.** The IPC toggle/show/hide (a keybind, for instance) used to no-op outside Shortcut mode. Now it works in every mode except Always, where nothing would bring the rail back — in Hover, it acts as a manual override alongside the hot edge; hovering the rail and moving away still hides it normally.
+
+**Fixed**
+
+- **Manual hide fighting Hover mode.** Toggling the rail shut with a keybind while the pointer was still over the hot edge or the rail got reopened by that same pointer position within one reveal delay — it looked like a second rail appearing instead of the first one closing. A manual hide/toggle now holds hover reveals off until the pointer actually leaves.
+- **Missed hover reveals.** The hot edge was 6px — a pointer arriving fast could stop right at the screen boundary without a motion event ever landing inside a strip that thin, so the rail occasionally just didn't come up. Widened to 12px.
+- **Segmented buttons not registering clicks.** Theme, trigger mode, and other pill-style choices used `TapHandler`, which cancels a tap whose release lands outside its bounds — easy to hit on a 22px-tall target under some pointer/scaling setups. Switched to a padded `MouseArea`, the same approach already used by the sliders.
+- **Segmented settings** (theme, trigger mode/edge, fullscreen behaviour, window previews, extras) now apply immediately instead of waiting on the settings-file round trip. Whenever that round trip fails — `jq` missing, no write access, no filesystem watch support — the buttons looked completely dead, while sliders kept working because they already updated in memory first. This also unblocks Shortcut trigger mode's own bind-line panel, which was unreachable when the Mode selector couldn't be changed.
 
 <!-- changelog:readme:end -->
 
