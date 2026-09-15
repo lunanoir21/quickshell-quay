@@ -14,6 +14,7 @@ QuayPinBoard 1.0 QuayPinBoard.qml
 QuayPinRow 1.0 QuayPinRow.qml
 QuayPreviewPopout 1.0 QuayPreviewPopout.qml
 QuayRail 1.0 QuayRail.qml
+QuayRailShape 1.0 QuayRailShape.qml
 QuayScrollView 1.0 QuayScrollView.qml
 QuaySegmented 1.0 QuaySegmented.qml
 QuaySettingRow 1.0 QuaySettingRow.qml

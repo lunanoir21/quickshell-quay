@@ -12,7 +12,9 @@ PanelWindow {
 
     required property var quayScreen
     required property int railThickness
-    required property int railLength
+    // Length of the rail surface along the edge; the rail may sit anywhere
+    // inside it, which the tile anchor already accounts for.
+    required property int surfaceLength
     property var entry: null
     // Tile centre in the rail surface's coordinates.
     property point anchorPoint: Qt.point(0, 0)
@@ -156,7 +158,7 @@ PanelWindow {
     Rectangle {
         id: card
 
-        readonly property real railStart: ((root.vertical ? root.height : root.width) - root.railLength) / 2
+        readonly property real railStart: ((root.vertical ? root.height : root.width) - root.surfaceLength) / 2
 
         width: 228
         height: menuColumn.implicitHeight + 12

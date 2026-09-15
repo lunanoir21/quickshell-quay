@@ -10,14 +10,18 @@ Item {
     property int thickness: 0
     property bool vertical: true
     property string edge: "right"
+    property string style: "floating"
+    property int edgeGap: 0
     property var gridView: null
 
     signal settingsRequested()
 
     // What the rail spends besides its tiles, so the surface can be sized to
-    // show every row it promises: the panel's inset from the screen edge, and
-    // along the rail the gear with its gap.
+    // show every row it promises: the panel's gap from the screen edge, and
+    // along the rail the gear with its gap. Only a floating panel keeps off the
+    // edge; the other styles draw their background with QuayRailShape.
     readonly property int panelInset: 4
+    readonly property int edgeInset: root.style === "floating" ? root.edgeGap : 0
     readonly property int chromeLength: gearButton.height + 8 + root.panelInset * 2
 
     default property alias content: contentArea.data
@@ -36,14 +40,14 @@ Item {
     Rectangle {
         id: panel
         anchors.fill: parent
-        anchors.leftMargin: root.edge === "right" ? 0 : root.panelInset
-        anchors.rightMargin: root.edge === "left" ? 0 : root.panelInset
-        anchors.topMargin: root.edge === "bottom" ? 0 : root.panelInset
-        anchors.bottomMargin: root.edge === "top" ? 0 : root.panelInset
+        anchors.leftMargin: root.edge === "left" ? root.edgeInset : (root.edge === "right" ? 0 : root.panelInset)
+        anchors.rightMargin: root.edge === "right" ? root.edgeInset : (root.edge === "left" ? 0 : root.panelInset)
+        anchors.topMargin: root.edge === "top" ? root.edgeInset : (root.edge === "bottom" ? 0 : root.panelInset)
+        anchors.bottomMargin: root.edge === "bottom" ? root.edgeInset : (root.edge === "top" ? 0 : root.panelInset)
 
         radius: QuayTheme.radiusLarge
-        color: QuayTheme.alpha(QuayTheme.base, 0.88)
-        border.width: 1
+        color: root.style === "floating" ? QuayTheme.alpha(QuayTheme.base, 0.88) : "transparent"
+        border.width: root.style === "floating" ? 1 : 0
         border.color: QuayTheme.alpha(QuayTheme.text, 0.07)
     }
 
@@ -64,8 +68,10 @@ Item {
         color: gearHover.hovered ? QuayTheme.alpha(QuayTheme.surface1, 0.85) : QuayTheme.alpha(QuayTheme.surface0, 0.55)
         scale: gearHover.hovered ? 1.08 : 1.0
 
-        x: root.vertical ? (root.width - width) / 2 : 8
-        y: root.vertical ? 8 : (root.height - height) / 2
+        // Centred on the panel, not the rail, so an edge gap doesn't push it
+        // off the tile column.
+        x: root.vertical ? panel.x + (panel.width - width) / 2 : 8
+        y: root.vertical ? 8 : panel.y + (panel.height - height) / 2
 
         Behavior on scale { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
         Behavior on color { ColorAnimation { duration: 120 } }

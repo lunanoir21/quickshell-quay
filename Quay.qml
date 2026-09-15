@@ -19,11 +19,31 @@ PanelWindow {
     readonly property int hotEdge: 12
     readonly property int padding: 10
 
+    readonly property bool flush: QuayStore.style === "flush"
+    readonly property bool bridge: QuayStore.style === "bridge"
+
     readonly property int cell: QuayStore.iconSize + QuayStore.spacing
-    readonly property int railThickness: QuayStore.columns * root.cell + root.padding * 2 + rail.panelInset
+    readonly property int screenLength: root.vertical ? root.screen.height : root.screen.width
+    // Bridge ears reach past both ends of the rail along the edge.
+    readonly property int ear: root.bridge ? QuayStore.fillet : 0
+    readonly property int railThickness: QuayStore.columns * root.cell + root.padding * 2 + rail.edgeInset
     readonly property int railLength: Math.min(
         QuayStore.rows * root.cell + root.padding * 2 + rail.chromeLength,
-        (root.vertical ? root.screen.height : root.screen.width) - 80)
+        root.screenLength - 80 - root.ear * 2)
+
+    // Flush runs the whole edge; its ears flare into the screen, so the surface
+    // needs that much more depth than the rail itself.
+    readonly property int surfaceLength: root.flush ? root.screenLength : root.railLength + root.ear * 2
+    readonly property int surfaceDepth: root.railThickness
+        + (root.flush ? Math.max(root.hotEdge, QuayStore.fillet) : root.hotEdge)
+    // Where the rail sits along the surface. Flush centres it in what the
+    // frame inset leaves; the compositor already keeps a surface with
+    // exclusiveZone 0 clear of bars that reserve space.
+    readonly property int railOffset: {
+        if (!root.flush) return root.ear;
+        let length = root.vertical ? root.height : root.width;
+        return Math.round(QuayStore.frameInset + (length - QuayStore.frameInset - root.railLength) / 2);
+    }
 
     // The surface always occupies its full expanded size; `mask` is what makes
     // the collapsed state click-through, so revealing needs no reconfigure.
@@ -59,14 +79,16 @@ PanelWindow {
     color: "transparent"
 
     anchors {
-        left: QuayStore.triggerEdge === "left"
-        right: QuayStore.triggerEdge === "right"
-        top: QuayStore.triggerEdge === "top"
-        bottom: QuayStore.triggerEdge === "bottom"
+        left: QuayStore.triggerEdge === "left" || (root.flush && !root.vertical)
+        right: QuayStore.triggerEdge === "right" || (root.flush && !root.vertical)
+        top: QuayStore.triggerEdge === "top" || (root.flush && root.vertical)
+        bottom: QuayStore.triggerEdge === "bottom" || (root.flush && root.vertical)
     }
 
-    implicitWidth: root.vertical ? root.railThickness + root.hotEdge : root.railLength
-    implicitHeight: root.vertical ? root.railLength : root.railThickness + root.hotEdge
+    // Anchored to both ends, the compositor sets the length, but a zero
+    // implicit size there keeps the window from being created at all.
+    implicitWidth: root.vertical ? root.surfaceDepth : root.surfaceLength
+    implicitHeight: root.vertical ? root.surfaceLength : root.surfaceDepth
 
     // Never reserve space: Quay floats over whatever is on screen, so windows
     // are not resized when it appears.
@@ -163,7 +185,7 @@ PanelWindow {
         sourceComponent: QuayPreviewPopout {
             quayScreen: root.screen
             railThickness: root.railThickness
-            railLength: root.railLength
+            surfaceLength: root.vertical ? root.height : root.width
             entryId: grid.previewId
             anchorPoint: grid.previewAnchor
             open: root.previewBeside
@@ -200,7 +222,7 @@ PanelWindow {
         sourceComponent: QuayContextMenu {
             quayScreen: root.screen
             railThickness: root.railThickness
-            railLength: root.railLength
+            surfaceLength: root.vertical ? root.height : root.width
             entry: root.menuEntry
             anchorPoint: root.menuAnchor
             onFolderRequested: id => grid.openFolder(id)
@@ -257,12 +279,41 @@ PanelWindow {
         }
     }
 
+    // Flush and bridge backgrounds. Its depth follows the rail as it slides,
+    // so the shape grows out of the edge instead of moving in from off screen;
+    // a bridge keeps its handle while hidden, but not over fullscreen.
+    QuayRailShape {
+        anchors.fill: parent
+        style: QuayStore.style
+        edge: QuayStore.triggerEdge
+        fillet: QuayStore.fillet
+
+        bodyStart: root.flush ? QuayStore.frameInset : (root.vertical ? rail.y : rail.x)
+        bodyEnd: root.flush
+            ? (root.vertical ? root.height : root.width)
+            : (root.vertical ? rail.y + rail.height : rail.x + rail.width)
+
+        depth: {
+            if (!root.flush && !root.bridge) return 0;
+            let edge = QuayStore.triggerEdge;
+            let reach = edge === "right" ? root.width - rail.x
+                : edge === "left" ? rail.x + rail.width
+                : edge === "bottom" ? root.height - rail.y
+                : rail.y + rail.height;
+            reach = Math.max(0, Math.min(root.railThickness, reach));
+            if (root.bridge && !root.suppressed) return Math.max(QuayStore.handle, reach);
+            return reach;
+        }
+    }
+
     QuayRail {
         id: rail
 
         thickness: root.railThickness
         vertical: root.vertical
         edge: QuayStore.triggerEdge
+        style: QuayStore.style
+        edgeGap: QuayStore.edgeGap
         gridView: grid
 
         onSettingsRequested: root.openSettings()
@@ -271,17 +322,17 @@ PanelWindow {
         // only the hot edge remains on screen.
         x: root.vertical
             ? (QuayStore.triggerEdge === "right"
-                ? (root.shown ? root.hotEdge : root.width)
+                ? (root.shown ? root.width - root.railThickness : root.width)
                 : (root.shown ? 0 : -root.railThickness))
-            : 0
+            : root.railOffset
         y: root.vertical
-            ? 0
+            ? root.railOffset
             : (QuayStore.triggerEdge === "bottom"
-                ? (root.shown ? root.hotEdge : root.height)
+                ? (root.shown ? root.height - root.railThickness : root.height)
                 : (root.shown ? 0 : -root.railThickness))
 
-        width: root.vertical ? root.railThickness : root.width
-        height: root.vertical ? root.height : root.railThickness
+        width: root.vertical ? root.railThickness : root.railLength
+        height: root.vertical ? root.railLength : root.railThickness
 
         // NumberAnimation, not XAnimator: a render-thread animator inside a
         // Behavior never starts while the surface is still unmapped, which
