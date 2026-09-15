@@ -34,24 +34,19 @@ paneli, kendi uygulama dizini vardır. Bir shell'e eklemek bir import ve bir
 satır sürer.
 
 <!-- changelog:readme:start -->
-## 1.1.2 sürümündeki yenilikler
+## 1.2.0 sürümündeki yenilikler
 
 _2026-09-15 tarihinde yayınlandı · [Tüm değişiklik günlüğü](CHANGELOG.tr.md)_
 
 **Eklenenler**
 
-- **Omarchy eklentisi olarak mevcut.** [quay-omarchy](https://github.com/lunanoir21/quay-omarchy), Quay'i Omarchy'nin eklenti pazarı için `background`, `lock` ve `notifications` gibi built-in'lerle aynı şekilde bir `service` olarak paketliyor: `omarchy plugin add https://github.com/lunanoir21/quay-omarchy.git --enable`.
+- **Üç ray görünümü.** Appearance → Style, rayın ekran kenarıyla nasıl buluşacağını seçer. Varsayılan **Floating**, rayı ayarlanabilir bir boşlukla kenardan uzak tutar. **Flush**, tüm kenar boyunca uzanan ve iki ucunda ekranın içine doğru kıvrılan bir şerit çizer; masaüstü köşeleri yuvarlatılmış bir pencere gibi görünür. Yer ayıran bar'ların altına zaten oturur, ayırmayanlar için `frameInset` pay bırakır. **Bridge**, rayı içbükey birleşimlerle kenara kaynaştırır ve açılırken ince bir tutamaktan büyür — ray gizliyken tutamak kenarda kalır (0 yaparsan hiç kalmaz) ve tam ekranda rayla birlikte çekilir.
+- **Stil ayarları:** `appearance` altında `edgeGap`, `fillet`, `handle` ve `frameInset`. Panel her birini yalnızca onu kullanan stilde gösterir, aralık dışı değerler sınırlanır.
 
 **Değişenler**
 
-- **Toggle artık Hover modunda da çalışıyor.** IPC toggle/show/hide (örneğin bir kısayol) daha önce Shortcut modu dışında hiçbir şey yapmıyordu. Artık Always dışında her modda çalışıyor — Always'de rail'i geri getirecek hiçbir tetikleyici kalmıyor. Hover modunda bu, sıcak kenara ek bir manuel geçiş gibi davranıyor; rail'in üzerine gelip çekilmek yine normal hover zamanlayıcılarıyla kapatıyor.
-
-**Düzeltilenler**
-
-- **Manuel kapatmanın Hover moduyla çakışması.** İmleç hâlâ sıcak kenarın ya da rail'in üzerindeyken kısayolla rail'i kapatmak, aynı imleç konumu yüzünden bir reveal delay içinde tekrar açılmasına sebep oluyordu — sanki ilk rail kapanacağına ikinci bir tane beliriyormuş gibi görünüyordu. Manuel kapatma/toggle artık imleç gerçekten ayrılana kadar hover açılışlarını durduruyor.
-- **Kaçırılan hover açılışları.** Sıcak kenar 6px'ti — imleç hızlı vardığında, ekran sınırında tam durduğu an o kadar ince bir şeridin içine bir hareket olayı hiç denk gelmeyebiliyordu, bu yüzden rail ara sıra hiç açılmıyordu. 12px'e genişletildi.
-- **Segmented butonların tıklamayı algılamaması.** Tema, trigger modu gibi pill tarzı seçenekler `TapHandler` kullanıyordu; bu, bırakma noktası sınırların dışına düşerse tap'i iptal ediyor — 22px yüksekliğindeki bir hedefte bazı pointer/ölçekleme kurulumlarında kolayca oluyor. Kaydırıcıların zaten kullandığı yöntemle, paddingli bir `MouseArea`'ya geçildi.
-- **Segmented ayarlar** (tema, trigger modu/kenarı, tam ekran davranışı, pencere önizlemeleri, ekstralar) artık ayar dosyası round-trip'ini beklemeden hemen uygulanıyor. Bu round-trip herhangi bir sebeple başarısız olduğunda (`jq` eksik, yazma izni yok, dosya sistemi izleme desteklenmiyor) butonlar tamamen ölü görünüyordu; kaydırıcılar ise önce bellekte güncellediği için çalışmaya devam ediyordu. Bu düzeltme aynı zamanda Shortcut trigger modunun kendi bind-satırı panelini de açığa çıkarıyor — Mode seçici değiştirilemediği için o panel hiç ulaşılamıyordu.
+- **Floating ray varsayılan olarak kenardan 8px uzakta**; önceden sabit 4px idi, artık Edge gap olarak ayarlanabiliyor.
+- **Dişli, panel kenardan içeri alındığında da kutucuk sütununda ortalı kalıyor.**
 
 <!-- changelog:readme:end -->
 

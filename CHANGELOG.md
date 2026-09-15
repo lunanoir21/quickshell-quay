@@ -8,6 +8,30 @@ This file and [CHANGELOG.tr.md](CHANGELOG.tr.md) are the only places to write
 release notes. `python3 scripts/changelog.py` copies the latest release into
 the READMEs and every release onto the website.
 
+## [1.2.0] - 2026-09-15
+
+### Added
+
+- **Three rail styles.** Appearance → Style picks how the rail meets the
+  screen edge. **Floating**, the default, keeps it off the edge by a gap you
+  set. **Flush** runs a strip along the whole edge that flares into the screen
+  at both ends, so the desktop reads as a window with rounded corners; it
+  already sits below bars that reserve space, and `frameInset` makes room for
+  ones that don't. **Bridge** welds the rail to the edge with concave joins
+  and grows out of a thin handle as it comes in — the handle stays on the edge
+  while the rail is hidden (set it to 0 for none) and stands down over
+  fullscreen, like the rail itself.
+- **Style settings:** `edgeGap`, `fillet`, `handle` and `frameInset` under
+  `appearance`. The panel shows each one only for the style that uses it, and
+  out-of-range values are clamped.
+
+### Changed
+
+- **The floating rail keeps 8px off the edge by default**, up from a fixed
+  4px, and the gap is now adjustable as Edge gap.
+- **The gear stays centred on the tile column** when the panel is inset from
+  the edge.
+
 ## [1.1.2] - 2026-09-15
 
 ### Added
@@ -128,6 +152,8 @@ the READMEs and every release onto the website.
   and 165 Hz.
 - **IPC:** `toggle`, `show`, `hide`, `settings` and `refreshApps`.
 
+[1.2.0]: https://github.com/lunanoir21/quickshell-quay/compare/v1.1.2...v1.2.0
+[1.1.2]: https://github.com/lunanoir21/quickshell-quay/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/lunanoir21/quickshell-quay/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/lunanoir21/quickshell-quay/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/lunanoir21/quickshell-quay/releases/tag/v1.0.0

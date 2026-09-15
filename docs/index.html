@@ -822,7 +822,7 @@ h3 { margin: 56px 0 18px; font: 700 14px/1.4 var(--mono); color: var(--ink); }
   <span class="top-mark">Quay</span>
   <span class="top-meta">For Quickshell · wlr-layer-shell</span>
   <!-- changelog:site-link:start -->
-  <a class="top-link" href="#changelog">What's new in 1.1.2</a>
+  <a class="top-link" href="#changelog">What's new in 1.2.0</a>
   <!-- changelog:site-link:end -->
   <a class="top-link" href="https://github.com/lunanoir21/quickshell-quay">Source on GitHub</a>
 </header>
@@ -1038,11 +1038,33 @@ ShellRoot {
     <h2 id="changelog-title">Changelog</h2>
     <p class="section-lede">Every release, newest first. The same notes live in <a href="https://github.com/lunanoir21/quickshell-quay/blob/main/CHANGELOG.md">CHANGELOG.md</a>.</p>
     <div class="releases">
-      <article class="release is-latest" id="v1-1-2">
+      <article class="release is-latest" id="v1-2-0">
+        <header class="release-head">
+          <h3>1.2.0</h3>
+          <time datetime="2026-09-15">2026-09-15</time>
+          <span class="release-tag">Latest</span>
+        </header>
+        <div class="release-body">
+          <div class="release-group">
+            <p class="release-kind">Added</p>
+            <ul class="changes">
+              <li><strong>Three rail styles.</strong> Appearance → Style picks how the rail meets the screen edge. <strong>Floating</strong>, the default, keeps it off the edge by a gap you set. <strong>Flush</strong> runs a strip along the whole edge that flares into the screen at both ends, so the desktop reads as a window with rounded corners; it already sits below bars that reserve space, and <code>frameInset</code> makes room for ones that don't. <strong>Bridge</strong> welds the rail to the edge with concave joins and grows out of a thin handle as it comes in — the handle stays on the edge while the rail is hidden (set it to 0 for none) and stands down over fullscreen, like the rail itself.</li>
+              <li><strong>Style settings:</strong> <code>edgeGap</code>, <code>fillet</code>, <code>handle</code> and <code>frameInset</code> under <code>appearance</code>. The panel shows each one only for the style that uses it, and out-of-range values are clamped.</li>
+            </ul>
+          </div>
+          <div class="release-group">
+            <p class="release-kind">Changed</p>
+            <ul class="changes">
+              <li><strong>The floating rail keeps 8px off the edge by default</strong>, up from a fixed 4px, and the gap is now adjustable as Edge gap.</li>
+              <li><strong>The gear stays centred on the tile column</strong> when the panel is inset from the edge.</li>
+            </ul>
+          </div>
+        </div>
+      </article>
+      <article class="release" id="v1-1-2">
         <header class="release-head">
           <h3>1.1.2</h3>
           <time datetime="2026-09-15">2026-09-15</time>
-          <span class="release-tag">Latest</span>
         </header>
         <div class="release-body">
           <div class="release-group">

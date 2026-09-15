@@ -9,6 +9,30 @@ Sürüm notları yalnızca bu dosyaya ve [CHANGELOG.md](CHANGELOG.md) dosyasına
 yazılır. `python3 scripts/changelog.py` son sürümü README'lere, tüm sürümleri
 web sitesine kopyalar.
 
+## [1.2.0] - 2026-09-15
+
+### Eklenenler
+
+- **Üç ray görünümü.** Appearance → Style, rayın ekran kenarıyla nasıl
+  buluşacağını seçer. Varsayılan **Floating**, rayı ayarlanabilir bir
+  boşlukla kenardan uzak tutar. **Flush**, tüm kenar boyunca uzanan ve iki
+  ucunda ekranın içine doğru kıvrılan bir şerit çizer; masaüstü köşeleri
+  yuvarlatılmış bir pencere gibi görünür. Yer ayıran bar'ların altına zaten
+  oturur, ayırmayanlar için `frameInset` pay bırakır. **Bridge**, rayı içbükey
+  birleşimlerle kenara kaynaştırır ve açılırken ince bir tutamaktan büyür —
+  ray gizliyken tutamak kenarda kalır (0 yaparsan hiç kalmaz) ve tam ekranda
+  rayla birlikte çekilir.
+- **Stil ayarları:** `appearance` altında `edgeGap`, `fillet`, `handle` ve
+  `frameInset`. Panel her birini yalnızca onu kullanan stilde gösterir,
+  aralık dışı değerler sınırlanır.
+
+### Değişenler
+
+- **Floating ray varsayılan olarak kenardan 8px uzakta**; önceden sabit 4px
+  idi, artık Edge gap olarak ayarlanabiliyor.
+- **Dişli, panel kenardan içeri alındığında da kutucuk sütununda ortalı
+  kalıyor.**
+
 ## [1.1.2] - 2026-09-15
 
 ### Eklenenler
@@ -134,6 +158,8 @@ web sitesine kopyalar.
   165 Hz'de de aynı hızdadır.
 - **IPC:** `toggle`, `show`, `hide`, `settings` ve `refreshApps`.
 
+[1.2.0]: https://github.com/lunanoir21/quickshell-quay/compare/v1.1.2...v1.2.0
+[1.1.2]: https://github.com/lunanoir21/quickshell-quay/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/lunanoir21/quickshell-quay/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/lunanoir21/quickshell-quay/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/lunanoir21/quickshell-quay/releases/tag/v1.0.0
