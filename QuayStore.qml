@@ -26,6 +26,11 @@ Singleton {
     }
 
     property string theme: "black"             // black | white | auto (follows the system)
+    property string style: "floating"          // floating | flush | bridge
+    property int edgeGap: 8                    // floating: distance from the screen edge
+    property int fillet: 18                    // flush, bridge: radius of the concave joins
+    property int handle: 3                     // bridge: sliver left on the edge while hidden
+    property int frameInset: 0                 // flush: room left for a bar that reserves none
 
     property string triggerMode: "hover"      // always | hover | shortcut
     property string triggerEdge: "right"      // left | right | top | bottom
@@ -71,6 +76,7 @@ Singleton {
     }
 
     readonly property var _themes: ["black", "white", "auto"]
+    readonly property var _styles: ["floating", "flush", "bridge"]
     readonly property var _triggerModes: ["always", "hover", "shortcut"]
     readonly property var _edges: ["left", "right", "top", "bottom"]
     readonly property var _extrasModes: ["pinned", "running", "recent"]
@@ -95,6 +101,11 @@ Singleton {
 
         let appearance = parsed.appearance || {};
         if (root._themes.indexOf(appearance.theme) !== -1) root.theme = appearance.theme;
+        if (root._styles.indexOf(appearance.style) !== -1) root.style = appearance.style;
+        if (typeof appearance.edgeGap === "number") root.edgeGap = Math.max(0, Math.min(32, appearance.edgeGap));
+        if (typeof appearance.fillet === "number") root.fillet = Math.max(0, Math.min(40, appearance.fillet));
+        if (typeof appearance.handle === "number") root.handle = Math.max(0, Math.min(8, appearance.handle));
+        if (typeof appearance.frameInset === "number") root.frameInset = Math.max(0, Math.min(200, appearance.frameInset));
 
         let content = parsed.content || {};
         if (root._extrasModes.indexOf(content.extras) !== -1) root.extras = content.extras;

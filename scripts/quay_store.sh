@@ -14,7 +14,12 @@ defaults() {
 {
   "schemaVersion": 1,
   "appearance": {
-    "theme": "black"
+    "theme": "black",
+    "style": "floating",
+    "edgeGap": 8,
+    "fillet": 18,
+    "handle": 3,
+    "frameInset": 0
   },
   "trigger": {
     "mode": "hover",
@@ -43,7 +48,7 @@ defaults() {
 JSON
 }
 
-option_paths='["appearance.theme","trigger.mode","trigger.edge","trigger.hoverRevealDelayMs","trigger.hoverHideDelayMs","trigger.hideOnFullscreen","layout.columns","layout.rows","layout.iconSize","layout.spacing","content.extras","content.recentLimit","previews.mode","previews.delayMs"]'
+option_paths='["appearance.theme","appearance.style","appearance.edgeGap","appearance.fillet","appearance.handle","appearance.frameInset","trigger.mode","trigger.edge","trigger.hoverRevealDelayMs","trigger.hoverHideDelayMs","trigger.hideOnFullscreen","layout.columns","layout.rows","layout.iconSize","layout.spacing","content.extras","content.recentLimit","previews.mode","previews.delayMs"]'
 
 _lock_held=0
 with_lock() {
