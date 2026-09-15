@@ -81,6 +81,9 @@ _2026-09-15 tarihinde yayınlandı · [Tüm değişiklik günlüğü](CHANGELOG.
   yapmak için başka birinin üstüne bırak.
 - **Üç görünme biçimi.** Her zaman ekranda, imleç kenara gelince kayarak ya da
   bir tuşla.
+- **Floating, flush ya da bridge.** Rayı kenardan ayrık tut, ekran çerçevesinin
+  parçası gibi tüm kenar boyunca uzat ya da ince bir tutamaktan büyüyen kavisli
+  birleşimlerle kenara kaynaştır.
 - **Asla yer kaplamaz.** Quay pencerelerinin üzerinde durur ve özel alan ayırmaz;
   açıldığında hiçbir pencere küçülmez.
 - **Siyah, beyaz ya da sistemin tercihi.** İki yönde de saf tek renk, ya da
@@ -99,12 +102,16 @@ _2026-09-15 tarihinde yayınlandı · [Tüm değişiklik günlüğü](CHANGELOG.
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/settings.png" width="560" alt="Quay'in ayar paneli, önizlemenin nereye açılacağının seçildiği Pencereler bölümünde">
+  <img src="docs/screenshots/styles.png" width="640" alt="Rayın üç görünümü: kenardan ayrık Floating, tüm kenar boyunca Flush ve kenara kaynaşan Bridge">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/settings.png" width="560" alt="Quay'in ayar paneli, Bridge görünümünün seçildiği Appearance bölümünde">
 </p>
 
 İki penceresi olan bir uygulamanın rayın yanında açılan önizlemeleri, kutucuk
-menüsü ve Quay'in kendi ayar panelindeki Pencereler bölümü. Hyprland'de
-1920×1080 çözünürlükte çekildi.
+menüsü, rayın üç görünümü — Floating, Flush ve Bridge — ve Quay'in kendi ayar
+panelindeki Appearance bölümü. Hyprland'de 1920×1080 çözünürlükte çekildi.
 
 ## Gereksinimler
 
@@ -199,7 +206,12 @@ boyutları sınırlar; bir yazım hatası rayı ulaşılamaz hale getiremez.
 {
   "schemaVersion": 1,
   "appearance": {
-    "theme": "black"              // "black" | "white" | "auto" (sistemi izle)
+    "theme": "black",             // "black" | "white" | "auto" (sistemi izle)
+    "style": "floating",          // "floating" | "flush" (tüm kenar boyunca) | "bridge" (kenara kaynaşık)
+    "edgeGap": 8,                 // floating: rail ile ekran kenarı arasındaki boşluk
+    "fillet": 18,                 // flush, bridge: rail'in kenarla birleştiği kavisin yarıçapı
+    "handle": 3,                  // bridge: gizliyken kenarda kalan çizgi, 0 = yok
+    "frameInset": 0               // flush: yer ayırmayan bir bar için bırakılan pay
   },
   "trigger": {
     "mode": "hover",              // "always" | "hover" | "shortcut"

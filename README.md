@@ -81,6 +81,9 @@ _Released 2026-09-15 · [Full changelog](CHANGELOG.md)_
   make a folder.
 - **Three ways to appear.** Always on screen, sliding in when the pointer reaches
   the edge, or opened with a key.
+- **Floating, flush or bridge.** Keep the rail off the edge, run it along the
+  whole edge as part of the screen's frame, or weld it to the edge with curved
+  joins that grow out of a thin handle.
 - **Never takes space.** Quay floats over your windows and reserves no exclusive
   zone, so nothing is resized when it appears.
 - **Black, white, or the system's.** Pure monochrome either way, or following
@@ -99,12 +102,16 @@ _Released 2026-09-15 · [Full changelog](CHANGELOG.md)_
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/settings.png" width="560" alt="Quay's settings panel on the Windows section, choosing where previews open">
+  <img src="docs/screenshots/styles.png" width="640" alt="The rail in its three styles: Floating off the edge, Flush along the whole edge, and Bridge welded to the edge">
 </p>
 
-Window previews beside the rail for an app with two windows, the tile menu, and
-the Windows section of Quay's own settings panel. Captured on Hyprland at
-1920×1080.
+<p align="center">
+  <img src="docs/screenshots/settings.png" width="560" alt="Quay's settings panel on the Appearance section, with the Bridge style selected">
+</p>
+
+Window previews beside the rail for an app with two windows, the tile menu, the
+three rail styles — Floating, Flush and Bridge — and the Appearance section of
+Quay's own settings panel. Captured on Hyprland at 1920×1080.
 
 ## Requirements
 
@@ -199,7 +206,12 @@ are clamped, so a typo cannot leave the rail unreachable.
 {
   "schemaVersion": 1,
   "appearance": {
-    "theme": "black"              // "black" | "white" | "auto" (follow the system)
+    "theme": "black",             // "black" | "white" | "auto" (follow the system)
+    "style": "floating",          // "floating" | "flush" (runs the whole edge) | "bridge" (welded to the edge)
+    "edgeGap": 8,                 // floating: space between the rail and the screen edge
+    "fillet": 18,                 // flush, bridge: radius of the curve where the rail meets the edge
+    "handle": 3,                  // bridge: sliver left on the edge while hidden, 0 for none
+    "frameInset": 0               // flush: room for a bar that reserves no space
   },
   "trigger": {
     "mode": "hover",              // "always" | "hover" | "shortcut"

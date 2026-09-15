@@ -877,7 +877,7 @@ h3 { margin: 56px 0 18px; font: 700 14px/1.4 var(--mono); color: var(--ink); }
 
   <section class="block" id="desktop" aria-labelledby="desktop-title">
     <h2 id="desktop-title">On a desktop</h2>
-    <p class="section-lede">Captured on Hyprland at 1920×1080: the rail in both themes, window previews beside the rail for an app with two windows, the tile menu, and the Windows section of Quay's own settings panel.</p>
+    <p class="section-lede">Captured on Hyprland at 1920×1080: the rail in both themes and in its three styles, window previews beside the rail for an app with two windows, the tile menu, and the Appearance section of Quay's own settings panel.</p>
     <div class="shots">
       <figure class="wide">
         <img src="screenshots/rail.png" width="1024" height="660" loading="lazy" alt="The rail docked to the right edge of the screen, in the black theme and in the white theme">
@@ -892,8 +892,12 @@ h3 { margin: 56px 0 18px; font: 700 14px/1.4 var(--mono); color: var(--ink); }
         <figcaption>Tile menu</figcaption>
       </figure>
       <figure class="wide">
-        <img src="screenshots/settings.png" width="760" height="580" loading="lazy" alt="Quay's settings panel on the Windows section, choosing where previews open">
-        <figcaption>Settings panel, Windows section</figcaption>
+        <img src="screenshots/styles.png" width="1044" height="1018" loading="lazy" alt="The rail in its three styles: Floating off the edge, Flush along the whole edge, and Bridge welded to the edge">
+        <figcaption>Floating, Flush and Bridge styles</figcaption>
+      </figure>
+      <figure class="wide">
+        <img src="screenshots/settings.png" width="760" height="580" loading="lazy" alt="Quay's settings panel on the Appearance section, with the Bridge style selected">
+        <figcaption>Settings panel, Appearance section</figcaption>
       </figure>
     </div>
   </section>
@@ -912,6 +916,13 @@ h3 { margin: 56px 0 18px; font: 700 14px/1.4 var(--mono); color: var(--ink); }
           <button type="button" data-theme-choice="white">White</button>
           <button type="button" data-theme-choice="auto">System</button>
         </div>
+      </div>
+      <div class="setting">
+        <div>
+          <p class="setting-label">Style</p>
+          <p class="setting-hint">Off the edge, along the whole edge as part of the screen's frame, or welded to it with curved joins.</p>
+        </div>
+        <div class="seg" aria-hidden="true"><span class="is-current">Floating</span><span>Flush</span><span>Bridge</span></div>
       </div>
       <div class="setting">
         <div>
