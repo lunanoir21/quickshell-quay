@@ -280,6 +280,84 @@ PanelWindow {
                 }
             }
 
+            QuaySettingRow {
+                label: qsTr("Style")
+                hint: qsTr("How the rail meets the screen edge")
+
+                QuaySegmented {
+                    options: [
+                        { value: "floating", label: qsTr("Floating") },
+                        { value: "flush", label: qsTr("Flush") },
+                        { value: "bridge", label: qsTr("Bridge") }
+                    ]
+                    currentValue: QuayStore.style
+                    onPicked: value => { QuayStore.style = value; QuayStore.setOption("appearance.style", value); }
+                }
+            }
+
+            QuaySettingRow {
+                visible: QuayStore.style === "floating"
+                label: qsTr("Edge gap")
+                hint: qsTr("Space between the rail and the screen edge")
+
+                QuayStepper {
+                    from: 0
+                    to: 32
+                    stepSize: 2
+                    suffix: "px"
+                    value: QuayStore.edgeGap
+                    onMoved: value => QuayStore.edgeGap = value
+                    onCommitted: value => QuayStore.setOption("appearance.edgeGap", value)
+                }
+            }
+
+            QuaySettingRow {
+                visible: QuayStore.style !== "floating"
+                label: qsTr("Join radius")
+                hint: qsTr("Curve where the rail meets the edge")
+
+                QuayStepper {
+                    from: 0
+                    to: 40
+                    stepSize: 2
+                    suffix: "px"
+                    value: QuayStore.fillet
+                    onMoved: value => QuayStore.fillet = value
+                    onCommitted: value => QuayStore.setOption("appearance.fillet", value)
+                }
+            }
+
+            QuaySettingRow {
+                visible: QuayStore.style === "bridge"
+                label: qsTr("Handle")
+                hint: qsTr("What stays on the edge while hidden")
+
+                QuayStepper {
+                    from: 0
+                    to: 8
+                    suffix: "px"
+                    value: QuayStore.handle
+                    onMoved: value => QuayStore.handle = value
+                    onCommitted: value => QuayStore.setOption("appearance.handle", value)
+                }
+            }
+
+            QuaySettingRow {
+                visible: QuayStore.style === "flush"
+                label: qsTr("Frame inset")
+                hint: qsTr("Room for a bar that reserves no space")
+
+                QuayStepper {
+                    from: 0
+                    to: 120
+                    stepSize: 2
+                    suffix: "px"
+                    value: QuayStore.frameInset
+                    onMoved: value => QuayStore.frameInset = value
+                    onCommitted: value => QuayStore.setOption("appearance.frameInset", value)
+                }
+            }
+
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 96
