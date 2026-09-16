@@ -12,6 +12,9 @@ Item {
 
     signal dismissed()
     signal selected(var toplevel)
+    // Hovering this card is, to the grid beneath it, indistinguishable from
+    // the pointer having left — this is the only way to tell it otherwise.
+    signal holdChanged(bool held)
 
     readonly property var group: QuayWindows.groupFor(root.entryId)
     readonly property var windowList: root.group ? root.group.windows : []
@@ -34,6 +37,15 @@ Item {
         border.color: QuayTheme.alpha(QuayTheme.text, 0.08)
 
         TapHandler { onTapped: root.dismissed() }
+
+        // This overlay sits on top of the grid it opened from, so hovering
+        // it reads to that grid's own HoverHandler as the pointer having
+        // left. Without this, the close timer underneath fires while the
+        // pointer is sitting right on the preview it's about to close.
+        HoverHandler {
+            id: cardHover
+            onHoveredChanged: root.holdChanged(cardHover.hovered)
+        }
     }
 
     Flickable {

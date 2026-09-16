@@ -93,6 +93,10 @@ Item {
 
     function hidePreview() {
         root.previewId = "";
+        // The inside overlay below is destroyed outright when it closes, not
+        // faded out like the beside popout, so a hold it set while the
+        // pointer was still on it would otherwise never be released.
+        root.previewHeld = false;
     }
 
     function holdPreview(held) {
@@ -282,6 +286,7 @@ Item {
         sourceComponent: QuayWindowPreview {
             entryId: root.previewId
             onDismissed: root.hidePreview()
+            onHoldChanged: held => root.holdPreview(held)
             onSelected: toplevel => {
                 toplevel.activate();
                 root.hidePreview();
