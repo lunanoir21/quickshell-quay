@@ -35,19 +35,23 @@ settings panel, its own app index. Vendoring it into a shell takes one import
 and one line.
 
 <!-- changelog:readme:start -->
-## What's new in 1.2.0
+## What's new in 1.2.1
 
-_Released 2026-09-15 · [Full changelog](CHANGELOG.md)_
+_Released 2026-09-16 · [Full changelog](CHANGELOG.md)_
 
-**Added**
+**Security**
 
-- **Three rail styles.** Appearance → Style picks how the rail meets the screen edge. **Floating**, the default, keeps it off the edge by a gap you set. **Flush** runs a strip along the whole edge that flares into the screen at both ends, so the desktop reads as a window with rounded corners; it already sits below bars that reserve space, and `frameInset` makes room for ones that don't. **Bridge** welds the rail to the edge with concave joins and grows out of a thin handle as it comes in — the handle stays on the edge while the rail is hidden (set it to 0 for none) and stands down over fullscreen, like the rail itself.
-- **Style settings:** `edgeGap`, `fillet`, `handle` and `frameInset` under `appearance`. The panel shows each one only for the style that uses it, and out-of-range values are clamped.
+- **Unbounded application-directory scan.** `quay_app_fetcher.py` walked `~/.local/share/applications`, Flatpak and Nix profile directories — none of them fully under Quay's control — with no limit on file count, path depth, per-file size, line length or total bytes read, and no protection against a symlink cycle. A `.desktop`-named FIFO or socket could also hang the scan indefinitely. It's now bounded on every axis (20000 files, depth 20, 256 KiB/file, 8192 bytes/line, 32 MiB total), never descends into a symlinked directory, and opens each file with `O_NONBLOCK` plus an `fstat` check on the descriptor actually opened — not a separate, racy `stat()` of the path beforehand — so only a regular file is ever read, symlinks to one (Flatpak's exports directory is full of them) still work, and a FIFO returns instead of blocking. `QuayApps.qml` adds a second backstop: the scan is killed if it runs past 8 seconds, and output over 16 MiB is discarded unparsed.
+- **Rich-text rendering of external strings.** A window title (set by whatever app owns the window), a `.desktop` entry's name, and an unmatched compositor app-id all reached `Text` elements with Qt Quick's default `Text.AutoText`, which renders a string that looks like markup as rich text. All of them now render as `Text.PlainText`; window titles and unmatched app-ids are also length-capped (300 and 200 characters) before display.
+
+**Fixed**
+
+- **The in-rail window preview could close itself.** Hovering it read, to the grid underneath, as the pointer having left — the close timer fired while the pointer was sitting on the preview the user was trying to use.
+- **A stuck file-drag flag could hold the rail open indefinitely.** Dragging a file over a tile that the grid then recycled (`GridView.reuseItems`) left that tile's drag-hover flag on forever, since a pooled item never gets the drop area's own exit event.
 
 **Changed**
 
-- **The floating rail keeps 8px off the edge by default**, up from a fixed 4px, and the gap is now adjustable as Edge gap.
-- **The gear stays centred on the tile column** when the panel is inset from the edge.
+- **Focusing any window no longer rebuilds Quay's whole running-apps model.** Which window is focused used to be folded into the same map that tracks which apps are running, so any focus change anywhere on the desktop — not just ones affecting a pinned or listed app — invalidated it and everything computed from it, icon lookups included.
 
 <!-- changelog:readme:end -->
 

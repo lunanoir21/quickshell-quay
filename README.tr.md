@@ -34,19 +34,23 @@ paneli, kendi uygulama dizini vardır. Bir shell'e eklemek bir import ve bir
 satır sürer.
 
 <!-- changelog:readme:start -->
-## 1.2.0 sürümündeki yenilikler
+## 1.2.1 sürümündeki yenilikler
 
-_2026-09-15 tarihinde yayınlandı · [Tüm değişiklik günlüğü](CHANGELOG.tr.md)_
+_2026-09-16 tarihinde yayınlandı · [Tüm değişiklik günlüğü](CHANGELOG.tr.md)_
 
-**Eklenenler**
+**Güvenlik**
 
-- **Üç ray görünümü.** Appearance → Style, rayın ekran kenarıyla nasıl buluşacağını seçer. Varsayılan **Floating**, rayı ayarlanabilir bir boşlukla kenardan uzak tutar. **Flush**, tüm kenar boyunca uzanan ve iki ucunda ekranın içine doğru kıvrılan bir şerit çizer; masaüstü köşeleri yuvarlatılmış bir pencere gibi görünür. Yer ayıran bar'ların altına zaten oturur, ayırmayanlar için `frameInset` pay bırakır. **Bridge**, rayı içbükey birleşimlerle kenara kaynaştırır ve açılırken ince bir tutamaktan büyür — ray gizliyken tutamak kenarda kalır (0 yaparsan hiç kalmaz) ve tam ekranda rayla birlikte çekilir.
-- **Stil ayarları:** `appearance` altında `edgeGap`, `fillet`, `handle` ve `frameInset`. Panel her birini yalnızca onu kullanan stilde gösterir, aralık dışı değerler sınırlanır.
+- **Sınırsız uygulama dizini taraması.** `quay_app_fetcher.py`, `~/.local/share/applications`, Flatpak ve Nix profil dizinlerini — hiçbiri tam olarak Quay'in kontrolünde değil — dosya sayısı, yol derinliği, dosya başına boyut, satır uzunluğu ya da toplam okunan bayt için hiçbir sınır olmadan, sembolik link döngüsüne karşı korumasız tarıyordu. `.desktop` adlı bir FIFO ya da soket taramayı sonsuza kadar bloke edebilirdi. Artık her eksende sınırlı (20000 dosya, 20 derinlik, dosya başına 256 KiB, satır başına 8192 bayt, toplam 32 MiB), sembolik link'li dizinlere hiç inmiyor ve her dosyayı `O_NONBLOCK` ile açıp gerçekten açılan tanıtıcı üzerinde `fstat` kontrolü yapıyor — önceden ayrı ve yarışa açık bir `stat()` yerine — böylece yalnızca normal bir dosya okunuyor, bir dosyaya işaret eden sembolik linkler (Flatpak'ın dışa aktarma dizini bunlarla dolu) hâlâ çalışıyor, bir FIFO ise bloke olmadan geri dönüyor. `QuayApps.qml` ikinci bir güvenlik ağı ekliyor: tarama 8 saniyeyi geçerse öldürülüyor, 16 MiB'yi aşan çıktı hiç ayrıştırılmadan atılıyor.
+- **Dış kaynaklı metnin zengin metin olarak işlenmesi.** Bir pencere başlığı (pencereyi açan uygulama tarafından belirlenir), bir `.desktop` girdisinin adı ve eşleşmeyen bir compositor app-id'si, Qt Quick'in varsayılan `Text.AutoText`'i ile `Text` öğelerine ulaşıyordu — bu da HTML'e benzeyen bir dizeyi zengin metin olarak işler. Hepsi artık `Text.PlainText` ile işleniyor; pencere başlığı ve eşleşmeyen app-id ayrıca gösterimden önce uzunlukça sınırlanıyor (300 ve 200 karakter).
+
+**Düzeltilenler**
+
+- **Ray içi pencere önizlemesi kendi kendini kapatabiliyordu.** Üzerine gelmek, altındaki ızgaraya imlecin ayrıldığı gibi okunuyordu — kullanıcı önizlemeyi kullanmaya çalışırken kapatma zamanlayıcısı devreye giriyordu.
+- **Sıkışan bir dosya-sürükleme bayrağı rail'i sonsuza dek açık bırakabiliyordu.** Bir dosyayı, ızgaranın sonradan geri dönüştürdüğü (`GridView.reuseItems`) bir kutucuğun üzerinde sürüklemek, o kutucuğun sürükleme-hover bayrağını sonsuza dek açık bırakıyordu — havuzlanan bir öğe, bırakma alanının kendi çıkış olayını hiç almıyor çünkü.
 
 **Değişenler**
 
-- **Floating ray varsayılan olarak kenardan 8px uzakta**; önceden sabit 4px idi, artık Edge gap olarak ayarlanabiliyor.
-- **Dişli, panel kenardan içeri alındığında da kutucuk sütununda ortalı kalıyor.**
+- **Herhangi bir pencereye odaklanmak artık Quay'in tüm çalışan-uygulama modelini yeniden kurmuyor.** Hangi pencerenin odakta olduğu, hangi uygulamaların çalıştığını izleyen haritanın içine gömülüydü; bu yüzden masaüstündeki herhangi bir odak değişimi — sabitli ya da listelenen bir uygulamayı ilgilendirmese bile — haritayı ve ondan hesaplanan her şeyi (ikon aramaları dahil) geçersiz kılıyordu.
 
 <!-- changelog:readme:end -->
 

@@ -9,6 +9,54 @@ Sürüm notları yalnızca bu dosyaya ve [CHANGELOG.md](CHANGELOG.md) dosyasına
 yazılır. `python3 scripts/changelog.py` son sürümü README'lere, tüm sürümleri
 web sitesine kopyalar.
 
+## [1.2.1] - 2026-09-16
+
+### Güvenlik
+
+- **Sınırsız uygulama dizini taraması.** `quay_app_fetcher.py`,
+  `~/.local/share/applications`, Flatpak ve Nix profil dizinlerini —
+  hiçbiri tam olarak Quay'in kontrolünde değil — dosya sayısı, yol
+  derinliği, dosya başına boyut, satır uzunluğu ya da toplam okunan bayt
+  için hiçbir sınır olmadan, sembolik link döngüsüne karşı korumasız
+  tarıyordu. `.desktop` adlı bir FIFO ya da soket taramayı sonsuza kadar
+  bloke edebilirdi. Artık her eksende sınırlı (20000 dosya, 20 derinlik,
+  dosya başına 256 KiB, satır başına 8192 bayt, toplam 32 MiB), sembolik
+  link'li dizinlere hiç inmiyor ve her dosyayı `O_NONBLOCK` ile açıp
+  gerçekten açılan tanıtıcı üzerinde `fstat` kontrolü yapıyor — önceden
+  ayrı ve yarışa açık bir `stat()` yerine — böylece yalnızca normal bir
+  dosya okunuyor, bir dosyaya işaret eden sembolik linkler (Flatpak'ın
+  dışa aktarma dizini bunlarla dolu) hâlâ çalışıyor, bir FIFO ise bloke
+  olmadan geri dönüyor. `QuayApps.qml` ikinci bir güvenlik ağı ekliyor:
+  tarama 8 saniyeyi geçerse öldürülüyor, 16 MiB'yi aşan çıktı hiç
+  ayrıştırılmadan atılıyor.
+- **Dış kaynaklı metnin zengin metin olarak işlenmesi.** Bir pencere
+  başlığı (pencereyi açan uygulama tarafından belirlenir), bir `.desktop`
+  girdisinin adı ve eşleşmeyen bir compositor app-id'si, Qt Quick'in
+  varsayılan `Text.AutoText`'i ile `Text` öğelerine ulaşıyordu — bu da
+  HTML'e benzeyen bir dizeyi zengin metin olarak işler. Hepsi artık
+  `Text.PlainText` ile işleniyor; pencere başlığı ve eşleşmeyen app-id
+  ayrıca gösterimden önce uzunlukça sınırlanıyor (300 ve 200 karakter).
+
+### Düzeltilenler
+
+- **Ray içi pencere önizlemesi kendi kendini kapatabiliyordu.** Üzerine
+  gelmek, altındaki ızgaraya imlecin ayrıldığı gibi okunuyordu — kullanıcı
+  önizlemeyi kullanmaya çalışırken kapatma zamanlayıcısı devreye giriyordu.
+- **Sıkışan bir dosya-sürükleme bayrağı rail'i sonsuza dek açık
+  bırakabiliyordu.** Bir dosyayı, ızgaranın sonradan geri dönüştürdüğü
+  (`GridView.reuseItems`) bir kutucuğun üzerinde sürüklemek, o kutucuğun
+  sürükleme-hover bayrağını sonsuza dek açık bırakıyordu — havuzlanan bir
+  öğe, bırakma alanının kendi çıkış olayını hiç almıyor çünkü.
+
+### Değişenler
+
+- **Herhangi bir pencereye odaklanmak artık Quay'in tüm çalışan-uygulama
+  modelini yeniden kurmuyor.** Hangi pencerenin odakta olduğu, hangi
+  uygulamaların çalıştığını izleyen haritanın içine gömülüydü; bu yüzden
+  masaüstündeki herhangi bir odak değişimi — sabitli ya da listelenen bir
+  uygulamayı ilgilendirmese bile — haritayı ve ondan hesaplanan her şeyi
+  (ikon aramaları dahil) geçersiz kılıyordu.
+
 ## [1.2.0] - 2026-09-15
 
 ### Eklenenler
@@ -158,6 +206,7 @@ web sitesine kopyalar.
   165 Hz'de de aynı hızdadır.
 - **IPC:** `toggle`, `show`, `hide`, `settings` ve `refreshApps`.
 
+[1.2.1]: https://github.com/lunanoir21/quickshell-quay/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/lunanoir21/quickshell-quay/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/lunanoir21/quickshell-quay/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/lunanoir21/quickshell-quay/compare/v1.1.0...v1.1.1

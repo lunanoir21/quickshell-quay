@@ -8,6 +8,50 @@ This file and [CHANGELOG.tr.md](CHANGELOG.tr.md) are the only places to write
 release notes. `python3 scripts/changelog.py` copies the latest release into
 the READMEs and every release onto the website.
 
+## [1.2.1] - 2026-09-16
+
+### Security
+
+- **Unbounded application-directory scan.** `quay_app_fetcher.py` walked
+  `~/.local/share/applications`, Flatpak and Nix profile directories — none
+  of them fully under Quay's control — with no limit on file count, path
+  depth, per-file size, line length or total bytes read, and no protection
+  against a symlink cycle. A `.desktop`-named FIFO or socket could also hang
+  the scan indefinitely. It's now bounded on every axis (20000 files, depth
+  20, 256 KiB/file, 8192 bytes/line, 32 MiB total), never descends into a
+  symlinked directory, and opens each file with `O_NONBLOCK` plus an `fstat`
+  check on the descriptor actually opened — not a separate, racy `stat()` of
+  the path beforehand — so only a regular file is ever read, symlinks to one
+  (Flatpak's exports directory is full of them) still work, and a FIFO
+  returns instead of blocking. `QuayApps.qml` adds a second backstop: the
+  scan is killed if it runs past 8 seconds, and output over 16 MiB is
+  discarded unparsed.
+- **Rich-text rendering of external strings.** A window title (set by
+  whatever app owns the window), a `.desktop` entry's name, and an
+  unmatched compositor app-id all reached `Text` elements with Qt Quick's
+  default `Text.AutoText`, which renders a string that looks like markup as
+  rich text. All of them now render as `Text.PlainText`; window titles and
+  unmatched app-ids are also length-capped (300 and 200 characters) before
+  display.
+
+### Fixed
+
+- **The in-rail window preview could close itself.** Hovering it read, to
+  the grid underneath, as the pointer having left — the close timer fired
+  while the pointer was sitting on the preview the user was trying to use.
+- **A stuck file-drag flag could hold the rail open indefinitely.** Dragging
+  a file over a tile that the grid then recycled (`GridView.reuseItems`)
+  left that tile's drag-hover flag on forever, since a pooled item never
+  gets the drop area's own exit event.
+
+### Changed
+
+- **Focusing any window no longer rebuilds Quay's whole running-apps model.**
+  Which window is focused used to be folded into the same map that tracks
+  which apps are running, so any focus change anywhere on the desktop — not
+  just ones affecting a pinned or listed app — invalidated it and everything
+  computed from it, icon lookups included.
+
 ## [1.2.0] - 2026-09-15
 
 ### Added
@@ -152,6 +196,7 @@ the READMEs and every release onto the website.
   and 165 Hz.
 - **IPC:** `toggle`, `show`, `hide`, `settings` and `refreshApps`.
 
+[1.2.1]: https://github.com/lunanoir21/quickshell-quay/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/lunanoir21/quickshell-quay/compare/v1.1.2...v1.2.0
 [1.1.2]: https://github.com/lunanoir21/quickshell-quay/compare/v1.1.1...v1.1.2
 [1.1.1]: https://github.com/lunanoir21/quickshell-quay/compare/v1.1.0...v1.1.1
