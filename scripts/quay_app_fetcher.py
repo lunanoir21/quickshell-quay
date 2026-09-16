@@ -50,6 +50,30 @@ def _truncate(value):
     return value[:MAX_FIELD_LEN]
 
 
+def _open_regular(path):
+    """Opens `path` for reading and returns the file descriptor, or None.
+
+    Follows a file symlink — Flatpak's exports directory is one big farm of
+    them — but never blocks on, or reads from, anything but a regular file.
+    O_NONBLOCK makes opening a FIFO return immediately instead of waiting for
+    a writer that may never come; the type is then checked with fstat on the
+    descriptor actually opened, not a separate stat() of the path beforehand,
+    which would leave a race between the check and the open.
+    """
+    try:
+        fd = os.open(path, os.O_RDONLY | os.O_NONBLOCK)
+    except OSError:
+        return None
+    try:
+        if not stat.S_ISREG(os.fstat(fd).st_mode):
+            os.close(fd)
+            return None
+    except OSError:
+        os.close(fd)
+        return None
+    return fd
+
+
 def parse_entry(path, total_budget):
     entry = {
         'desktopId': os.path.splitext(os.path.basename(path))[0],
@@ -69,7 +93,11 @@ def parse_entry(path, total_budget):
     actions = {}
     file_bytes = 0
 
-    with open(path, 'r', encoding='utf-8', errors='replace') as handle:
+    fd = _open_regular(path)
+    if fd is None:
+        return None
+
+    with os.fdopen(fd, 'r', encoding='utf-8', errors='replace') as handle:
         while file_bytes < MAX_FILE_BYTES and total_budget[0] > 0:
             # A size-bounded readline, not `for raw in handle`: a file with
             # no newline at all would otherwise be read into memory as one
@@ -127,28 +155,18 @@ def parse_entry(path, total_budget):
 
 
 def _desktop_files(directory):
-    """Yields .desktop paths under `directory`, without ever descending into
-    a symlinked subdirectory or past MAX_DEPTH, and skipping anything that
-    isn't a regular file once symlinks are resolved."""
+    """Yields candidate .desktop paths under `directory`, without ever
+    descending into a symlinked subdirectory or past MAX_DEPTH. Whether a
+    path is actually safe to open is decided later, by _open_regular — a
+    stat() here would only duplicate that check racily."""
     base_depth = directory.rstrip(os.sep).count(os.sep)
     for root, dirs, files in os.walk(directory, followlinks=False):
         if root.rstrip(os.sep).count(os.sep) - base_depth >= MAX_DEPTH:
             dirs[:] = []
             continue
         for name in files:
-            if not name.endswith('.desktop'):
-                continue
-            path = os.path.join(root, name)
-            try:
-                # Follows a file symlink — Flatpak's exports directory is one
-                # big farm of them — but never opens a FIFO, socket or device
-                # a planted entry could point at, which a blocking read would
-                # hang on indefinitely.
-                if not stat.S_ISREG(os.stat(path).st_mode):
-                    continue
-            except OSError:
-                continue
-            yield path
+            if name.endswith('.desktop'):
+                yield os.path.join(root, name)
 
 
 def fetch():
