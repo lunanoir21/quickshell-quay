@@ -33,6 +33,13 @@ Singleton {
         return String(appId || "").toLowerCase();
     }
 
+    // A window's title is set by whatever app owns it, with no length limit
+    // of its own — bounded here so every preview showing one deals with the
+    // same modest string instead of each display site guessing a limit.
+    function titleFor(toplevel) {
+        return String((toplevel && toplevel.title) || "").slice(0, 300);
+    }
+
     // Focus is the usage signal: whatever the compositor hands focus to is what
     // the user just used, whether Quay launched it or not.
     onActiveToplevelChanged: {

@@ -140,6 +140,7 @@ PanelWindow {
             width: card.width - root.pad * 2
             height: root.headerHeight
             text: QuayApps.nameFor(root.shownId)
+            textFormat: Text.PlainText
             color: QuayTheme.subtext0
             font.family: QuayTheme.mono
             font.pixelSize: 10
@@ -199,7 +200,11 @@ PanelWindow {
                             anchors.bottom: parent.bottom
                             anchors.margins: 6
                             anchors.bottomMargin: 3
-                            text: windowCard.modelData.title
+                            text: QuayWindows.titleFor(windowCard.modelData)
+                            // A window title is the owning app's to set, not
+                            // trusted content — plain text keeps a title that
+                            // looks like markup from being rendered as any.
+                            textFormat: Text.PlainText
                             color: windowHover.hovered ? QuayTheme.text : QuayTheme.subtext0
                             font.family: QuayTheme.mono
                             font.pixelSize: 9

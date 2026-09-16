@@ -227,6 +227,7 @@ PanelWindow {
                     anchors.verticalCenter: parent.verticalCenter
                     width: parent.width - x - 8
                     text: root.subject ? root.subject.name : ""
+                    textFormat: Text.PlainText
                     color: QuayTheme.text
                     font.family: QuayTheme.mono
                     font.pixelSize: 11

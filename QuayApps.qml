@@ -31,9 +31,13 @@ Singleton {
         return null;
     }
 
+    // Falls back to the raw id (a compositor app-id, say) when no desktop
+    // entry matches — that id is as externally controlled as a window title,
+    // so it gets the same length bound before it reaches a Text element.
     function nameFor(id) {
         let entry = root.entryFor(id);
-        return entry ? entry.name : id;
+        if (entry) return entry.name;
+        return String(id || "").slice(0, 200);
     }
 
     // Absolute paths come straight off disk; bare names are resolved against

@@ -61,6 +61,9 @@ Item {
         anchors.rightMargin: 6
         anchors.verticalCenter: parent.verticalCenter
         text: root.label
+        // root.label is an app or folder name off disk or user data, not
+        // trusted content — plain text keeps it from being read as markup.
+        textFormat: Text.PlainText
         color: root.dimmed ? QuayTheme.overlay0 : QuayTheme.text
         font.family: QuayTheme.mono
         font.pixelSize: 11

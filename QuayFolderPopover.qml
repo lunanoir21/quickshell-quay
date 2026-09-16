@@ -37,6 +37,7 @@ Item {
         Text {
             anchors.horizontalCenter: parent.horizontalCenter
             text: root.folder ? root.folder.name : ""
+            textFormat: Text.PlainText
             color: QuayTheme.subtext0
             font.family: QuayTheme.mono
             font.pixelSize: 9

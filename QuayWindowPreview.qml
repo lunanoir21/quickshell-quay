@@ -52,6 +52,7 @@ Item {
             Text {
                 width: parent.width
                 text: QuayApps.nameFor(root.entryId)
+                textFormat: Text.PlainText
                 color: QuayTheme.subtext0
                 font.family: QuayTheme.mono
                 font.pixelSize: 9
@@ -97,7 +98,11 @@ Item {
                             id: label
                             anchors.centerIn: parent
                             width: parent.width - 8
-                            text: card.modelData.title
+                            text: QuayWindows.titleFor(card.modelData)
+                            // A window title is the owning app's to set, not
+                            // trusted content — plain text keeps a title that
+                            // looks like markup from being rendered as any.
+                            textFormat: Text.PlainText
                             color: QuayTheme.text
                             font.family: QuayTheme.mono
                             font.pixelSize: 8
