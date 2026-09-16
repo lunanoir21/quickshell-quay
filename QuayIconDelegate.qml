@@ -16,6 +16,13 @@ Item {
     // A file from another app is being dragged over this tile.
     property bool fileHover: false
 
+    // The grid reuses delegates (GridView.reuseItems): a pooled instance is
+    // repositioned off screen rather than destroyed, so it never gets the
+    // DropArea's own onExited if a drag was still over it at that moment.
+    // Left uncleared, that tile's stale "a file is over me" would hold the
+    // rail open in hover mode indefinitely (see fileDragActive in Quay.qml).
+    GridView.onPooled: root.fileHover = false
+
     signal activated(string id)
     signal folderToggled(string id)
     signal newWindowRequested(string id)
