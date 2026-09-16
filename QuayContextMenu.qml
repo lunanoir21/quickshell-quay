@@ -282,7 +282,6 @@ PanelWindow {
                     }
 
                     Text {
-                        id: rowGlyph
                         visible: !row.separator
                         x: 8
                         anchors.verticalCenter: parent.verticalCenter
